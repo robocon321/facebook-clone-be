@@ -1,0 +1,1 @@
+# Step 1: Access folder zipkin-server and run file zipkin-start.sh to start zipkin server

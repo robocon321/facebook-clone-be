@@ -1,0 +1,67 @@
+---
+version: '3.7'
+services:
+  ## Zipkin
+  zipkin:
+    image: openzipkin/zipkin
+    container_name: zipkin
+    ports:
+      - "9411:9411"
+
+  ## Eureka Server
+  discovery-server:
+    image: robocon321/discovery-server:latest
+    container_name: discovery-server
+    ports:
+      - "8761:8761"
+    depends_on:
+      - zipkin
+
+  ## Api Gateway
+  api-gateway:
+    image: robocon321/api-gateway:latest
+    container_name: api-gateway
+    ports:
+      - "9000:9000"
+    depends_on:
+      - zipkin
+      - discovery-server
+
+  ## Account-Service Docker Compose Config
+  account-service:
+    container_name: account-service
+    image: robocon321/account-service:latest
+    expose:
+      - "9001"
+    depends_on:
+      - discovery-server
+      - api-gateway
+
+  ## Prometheus
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    restart: always
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    depends_on:
+      - discovery-server
+      - api-gateway
+      - account-service
+      
+  # Grafana
+  grafana:
+    image: grafana/grafana-oss:latest
+    container_name: grafana
+    restart: always
+    ports:
+      - "3000:3000"
+    links:
+      - prometheus:prometheus
+    volumes:
+      - ./grafana:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=password

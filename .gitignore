@@ -1,0 +1,50 @@
+# IntelliJ IDEA
+.idea/
+*.iml
+
+# Eclipse
+.classpath
+.project
+.settings/
+
+# Spring Boot
+target/
+build/
+*.jar
+*.war
+
+# Logs
+logs/
+*.log
+
+# Gradle
+.gradle/
+build/
+
+# Maven
+.mvn/
+target/
+*.log
+
+# Docker
+# Dockerfile
+# docker-compose.yml
+# docker-compose.override.yml
+
+# Test reports
+TEST-*.xml
+
+# IDE-specific files
+.vscode/
+*.code-workspace
+*.code-workspace-staging
+*.code-workspace-global
+*.code-workspace-staging-global
+
+# Node.js dependencies (if applicable)
+node_modules/
+
+# Zipkin Server
+zipkin-server/
+!zipkin-server/zipkin-start.sh
+
