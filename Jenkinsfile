@@ -25,7 +25,7 @@ pipeline {
         
         stage('BUILD'){
             steps {
-                bat 'mvn clean install -DskipTests'
+                sh 'mvn clean install -DskipTests'
             }            
             post {
                 success {
