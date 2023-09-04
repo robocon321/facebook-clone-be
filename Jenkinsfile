@@ -26,7 +26,7 @@ pipeline {
         stage('BUILD'){
             post {
                 steps {
-                    echo 'Hello world'
+                    bat 'mvn -version'
                 }
                 success {
                     echo 'Now Archiving...'
