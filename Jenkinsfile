@@ -24,10 +24,10 @@ pipeline {
     stages{
         
         stage('BUILD'){
+            steps {
+                bat 'mvn -version'
+            }            
             post {
-                steps {
-                    bat 'mvn -version'
-                }
                 success {
                     echo 'Now Archiving...'
                     archiveArtifacts artifacts: '**/target/*.war'
