@@ -48,3 +48,7 @@ node_modules/
 zipkin-server/
 !zipkin-server/zipkin-start.sh
 
+# Coverage Report
+coverage-report/
+!coverage-report/pom.xml
+!coverage-report/src/**
