@@ -45,10 +45,10 @@ TEST-*.xml
 node_modules/
 
 # Zipkin Server
-zipkin-server/
+zipkin-server/*
 !zipkin-server/zipkin-start.sh
 
 # Coverage Report
-coverage-report/
+coverage-report/*
 !coverage-report/pom.xml
 !coverage-report/src/**
