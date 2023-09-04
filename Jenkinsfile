@@ -25,6 +25,9 @@ pipeline {
         
         stage('BUILD'){
             post {
+                steps {
+                    echo 'Hello world'
+                }
                 success {
                     echo 'Now Archiving...'
                     archiveArtifacts artifacts: '**/target/*.war'
