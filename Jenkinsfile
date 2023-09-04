@@ -31,10 +31,10 @@ pipeline {
             steps {
                 withSonarQubeEnv("${SONARSERVER}") {
                     sh '''${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=facebook-clone-be \
-                        -Dsonar.projectName=facebook-clone-repo \
+                        -Dsonar.projectName=facebook-clone-DiscoveryServer-repo \
                         -Dsonar.projectVersion=1.0 \
-                        -Dsonar.sources=src/ \
-                        -Dsonar.java.binaries=target/test-classes/com/visualpathit/account/controllerTest/ \
+                        -Dsonar.sources=discovery-server/src/ \
+                        -Dsonar.java.binaries=target/test-classes/com/example/demo/ \
                         -Dsonar.junit.reportsPath=target/surefire-reports/ \
                         -Dsonar.jacoco.reportsPath=target/jacoco.exec \
                         -Dsonar.java.checkstyle.reportPaths=target/checkstyle-result.xml'''
