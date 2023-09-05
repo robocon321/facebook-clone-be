@@ -22,6 +22,43 @@ pipeline {
     }
     
     stages{
+
+        stage('BUILD'){
+            steps {
+                sh 'mvn clean install -DskipTests'
+            }
+            post {
+                success {
+                    echo 'Now Archiving...'
+                    archiveArtifacts artifacts: '**/target/*.jar'
+                }
+            }
+        }
+
+        stage('UNIT TEST'){
+                steps {
+                    sh 'mvn test'
+                }
+        }
+
+        stage('INTEGRATION TEST'){
+            steps {
+                sh 'mvn verify -DskipUnitTests'
+            }
+        }
+        
+        stage ('CODE ANALYSIS WITH CHECKSTYLE'){
+            steps {
+                sh 'mvn checkstyle:checkstyle'
+            }
+            post {
+                success {
+                    echo 'Generated Analysis Result'
+                }
+            }
+        }
+
+        
         stage('CODE ANALYSIS Discovery Server with SONARQUBE') {
           
             environment {
@@ -29,41 +66,80 @@ pipeline {
             }
 
             steps {
-                withSonarQubeEnv("${SONARSERVER}") {
-                    sh '''${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=facebook-clone-be \
-                        -Dsonar.projectName=facebook-clone-DiscoveryServer-repo \
-                        -Dsonar.projectVersion=1.0 \
-                        -Dsonar.sources=discovery-server/src/ \
-                        -Dsonar.java.binaries=discovery-server/target/test-classes/com/example/demo/ \
-                        -Dsonar.junit.reportsPath=discovery-server/target/surefire-reports/ \
-                        -Dsonar.jacoco.reportsPath=discovery-server/target/jacoco.exec \
-                        -Dsonar.java.checkstyle.reportPaths=discovery-server/target/checkstyle-result.xml'''
+                script {
+                    withSonarQubeEnv("${SONARSERVER}") {
+                        sh '''${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=facebook-clone-DiscoveryServer-be \
+                            -Dsonar.projectName=facebook-clone-DiscoveryServer-repo \
+                            -Dsonar.projectVersion=1.0 \
+                            -Dsonar.sources=discovery-server/src/ \
+                            -Dsonar.java.binaries=discovery-server/target/test-classes/com/example/demo/ \
+                            -Dsonar.junit.reportsPath=discovery-server/target/surefire-reports/ \
+                            -Dsonar.jacoco.reportsPath=discovery-server/target/jacoco.exec \
+                            -Dsonar.java.checkstyle.reportPaths=discovery-server/target/checkstyle-result.xml'''
+
+                        timeout(time: 20, unit: 'SECONDS') {
+                            def qualityGate = waitForQualityGate()
+        
+                            if (qualityGate.status == 'OK') {
+                                echo 'Quality Gate passed. Proceeding with the pipeline.'
+                                currentBuild.result = 'FAILURE'
+                                echo 'Stage 1 failed but continuing...'
+                            } else {
+                                error('Quality Gate failed. Aborting the pipeline.')
+                            }
+                        }
+                    }
                 }
-                timeout(time: 5, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: false
+            }
+            
+            post {
+                failure {
+                    catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                        echo "Stage timed out but continuing..."
+                    }
                 }
             }
         }
 
-        stage('CODE ANALYSIS API Gateway with SONARQUBE') {
+
+        stage('CODE ANALYSIS Api Gateway with SONARQUBE') {
           
             environment {
                 scannerHome = tool "${SONARSCANNER}"
             }
 
             steps {
-                withSonarQubeEnv("${SONARSERVER}") {
-                    sh '''${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=facebook-clone-be \
-                        -Dsonar.projectName=facebook-clone-ApiGateway-repo \
-                        -Dsonar.projectVersion=1.0 \
-                        -Dsonar.sources=api-gateway/src/ \
-                        -Dsonar.java.binaries=api-gateway/target/test-classes/com/example/demo/ \
-                        -Dsonar.junit.reportsPath=api-gateway/target/surefire-reports/ \
-                        -Dsonar.jacoco.reportsPath=api-gateway/target/jacoco.exec \
-                        -Dsonar.java.checkstyle.reportPaths=api-gateway/target/checkstyle-result.xml'''
+                script {
+                    withSonarQubeEnv("${SONARSERVER}") {
+                        sh '''${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=facebook-clone-ApiGateway-be \
+                            -Dsonar.projectName=facebook-clone-ApiGateway-repo \
+                            -Dsonar.projectVersion=1.0 \
+                            -Dsonar.sources=api-gateway/src/ \
+                            -Dsonar.java.binaries=api-gateway/target/test-classes/com/example/demo/ \
+                            -Dsonar.junit.reportsPath=api-gateway/target/surefire-reports/ \
+                            -Dsonar.jacoco.reportsPath=api-gateway/target/jacoco.exec \
+                            -Dsonar.java.checkstyle.reportPaths=api-gateway/target/checkstyle-result.xml'''
+
+                        timeout(time: 20, unit: 'SECONDS') {
+                            def qualityGate = waitForQualityGate()
+        
+                            if (qualityGate.status == 'OK') {
+                                echo 'Quality Gate passed. Proceeding with the pipeline.'
+                                currentBuild.result = 'FAILURE'
+                                echo 'Stage 1 failed but continuing...'
+                            } else {
+                                error('Quality Gate failed. Aborting the pipeline.')
+                            }
+                        }
+                    }
                 }
-                timeout(time: 5, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: false
+            }
+            
+            post {
+                failure {
+                    catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                        echo "Stage timed out but continuing..."
+                    }
                 }
             }
         }
