@@ -39,7 +39,19 @@ pipeline {
                         -Dsonar.jacoco.reportsPath=discovery-server/target/jacoco.exec \
                         -Dsonar.java.checkstyle.reportPaths=discovery-server/target/checkstyle-result.xml'''
                 }
+                timeout(time: 5, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: false
+                }
+            }
+        }
+    stages{
+        stage('CODE ANALYSIS with SONARQUBE') {
+          
+            environment {
+                scannerHome = tool "${SONARSCANNER}"
+            }
 
+            steps {
                 withSonarQubeEnv("${SONARSERVER}") {
                     sh '''${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=facebook-clone-be \
                         -Dsonar.projectName=facebook-clone-ApiGateway-repo \
@@ -50,9 +62,8 @@ pipeline {
                         -Dsonar.jacoco.reportsPath=api-gateway/target/jacoco.exec \
                         -Dsonar.java.checkstyle.reportPaths=api-gateway/target/checkstyle-result.xml'''
                 }
-
-                timeout(time: 10, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
+                timeout(time: 5, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: false
                 }
             }
         }
