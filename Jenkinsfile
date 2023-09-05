@@ -44,8 +44,7 @@ pipeline {
                 }
             }
         }
-    }
-    stages{
+
         stage('CODE ANALYSIS API Gateway with SONARQUBE') {
           
             environment {
