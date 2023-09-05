@@ -168,9 +168,9 @@ pipeline {
     
                         if (qualityGate.status == 'OK') {
                             echo 'Quality Gate passed. Proceeding with the pipeline.'
+                        } else {
                             currentBuild.result = 'FAILURE'
                             echo 'Stage 1 failed but continuing...'
-                        } else {
                             error('Quality Gate failed. Aborting the pipeline.')
                         }
                     }
