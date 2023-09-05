@@ -44,6 +44,7 @@ pipeline {
                 }
             }
         }
+    }
     stages{
         stage('CODE ANALYSIS with SONARQUBE') {
           
@@ -67,6 +68,5 @@ pipeline {
                 }
             }
         }
-
     }
 }
