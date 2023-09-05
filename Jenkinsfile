@@ -22,7 +22,7 @@ pipeline {
     }
     
     stages{
-        stage('CODE ANALYSIS with SONARQUBE') {
+        stage('CODE ANALYSIS Discovery Server with SONARQUBE') {
           
             environment {
                 scannerHome = tool "${SONARSCANNER}"
@@ -46,7 +46,7 @@ pipeline {
         }
     }
     stages{
-        stage('CODE ANALYSIS with SONARQUBE') {
+        stage('CODE ANALYSIS API Gateway with SONARQUBE') {
           
             environment {
                 scannerHome = tool "${SONARSCANNER}"
