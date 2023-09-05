@@ -8,11 +8,11 @@ pipeline {
     }
     
     environment {
-        SNAP_REPO = 'facebook-clone-snapshot'
+        SNAP_REPO = 'facebook-clone-backend-snapshot'
         NEXUS_USER = 'admin'
         NEXUS_PASS = '0123456789'
-        RELEASE_REPO = 'facebook-clone-release'
-        CENTRAL_REPO = 'facebook-clone-maven-central'
+        RELEASE_REPO = 'facebook-clone-backend-release'
+        CENTRAL_REPO = 'facebook-clone-backend-central'
         NEXUSIP = 'localhost'
         NEXUSPORT = '8081'
         NEXUS_GRP_REPO = 'facebook-clone-group'
@@ -124,8 +124,7 @@ pipeline {
                     }
                 }
             }
-        }
-        
+        }        
 
         stage('ACCOUNT SERVICE CODE ANALYSIS WITH SONARQUBE') {
           
@@ -187,5 +186,39 @@ pipeline {
             
         }
 
+        stage("PUBLISH TO NEXUS REPOSITORY MANAGER") {
+            steps{
+                nexusArtifactUploader(
+                  nexusVersion: 'nexus3',
+                  protocol: 'http',
+                  nexusUrl: "${NEXUSIP}:${NEXUSPORT}",
+                  groupId: 'com.robocon321',
+                  version: "${env.BUILD_ID}-${env.BUILD_TIMESTAMP}",
+                  repository: "${RELEASE_REPO}",
+                  credentialsId: "${NEXUS_LOGIN}",
+                  artifacts: [
+                    [artifactId: 'account-service',
+                     classifier: '',
+                     file: 'account-service/target/account-service-0.0.1-SNAPSHOT.jar',
+                     type: 'jar'],
+                     
+                    [artifactId: 'api-gateway',
+                     classifier: '',
+                     file: 'api-gateway/target/api-gateway-0.0.1-SNAPSHOT.jar',
+                     type: 'jar'],
+                     
+                    [artifactId: 'coverage-report',
+                     classifier: '',
+                     file: 'coverage-report/target/coverage-report-0.0.1-SNAPSHOT.jar',
+                     type: 'jar'],
+                     
+                    [artifactId: 'discovery-server',
+                     classifier: '',
+                     file: 'discovery-server/target/discovery-server-0.0.1-SNAPSHOT.jar',
+                     type: 'jar'],
+                  ]
+                )
+            }
+        }
     }
 }
