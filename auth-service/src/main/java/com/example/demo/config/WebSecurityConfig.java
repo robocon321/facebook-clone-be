@@ -1,5 +1,8 @@
 package com.example.demo.config;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -11,6 +14,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
 
 @Configuration
 @EnableWebSecurity
@@ -20,9 +24,20 @@ public class WebSecurityConfig {
 		return new CustomUserDetailService();
 	}
 
+	@SuppressWarnings("removal")
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-		return http.csrf().disable().authorizeHttpRequests().requestMatchers("/**").permitAll().and().build();
+//		CorsConfiguration config = new CorsConfiguration();
+
+//		config.setAllowCredentials(true);
+//		config.setAllowedOrigins(List.of("http://localhost:3000"));
+//		config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
+//		config.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type"));
+
+		return http.csrf().disable().authorizeHttpRequests().requestMatchers("/**").permitAll()
+				.and()
+//				.cors(cors -> cors.configurationSource(request -> config))
+				.build();
 	}
 
 	@Bean
