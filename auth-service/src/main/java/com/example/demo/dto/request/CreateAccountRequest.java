@@ -36,11 +36,9 @@ public class CreateAccountRequest {
 	@ValidName(message = "Invalid lastname")
 	private String lastName;
 	
-	@NotNull
-	private Date birthday;
+	@NotNull(message = "Birthdate must be not null")
+	private Date birthdate;
 	
-	@NotNull
+	@NotNull(message = "Gender must be not null")
 	private GenderType gender;
-	
-	private DeleteStatusType status = DeleteStatusType.ACTIVE;
 }

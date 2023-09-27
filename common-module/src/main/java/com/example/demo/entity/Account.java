@@ -31,10 +31,10 @@ public class Account {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer accountId;
 	
-	@Column(nullable = false, unique = true, length = 100)
+	@Column(unique = true, length = 100)
 	private String email;
 
-	@Column(nullable = false, unique = true, length = 15)
+	@Column(unique = true, length = 15)
 	private String phone;
 
 	@Column(nullable = false, length = 100)
@@ -47,7 +47,7 @@ public class Account {
 	private String lastName;
 	
 	@Column(nullable = false)
-	private Date birthday;
+	private Date birthdate;
 	
 	@Transient
 	private GenderType gender;

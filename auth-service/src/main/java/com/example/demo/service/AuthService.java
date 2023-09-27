@@ -15,6 +15,7 @@ import com.example.demo.entity.Account;
 import com.example.demo.exception.JwtTokenException;
 import com.example.demo.provider.JwtProvider;
 import com.example.demo.repository.AccountRepository;
+import com.example.demo.type.DeleteStatusType;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -40,6 +41,7 @@ public class AuthService {
     public CreateAccountResponse saveAccount(CreateAccountRequest request) throws RuntimeException {
     	Account entity = new Account();
     	BeanUtils.copyProperties(request, entity);
+    	entity.setStatus(DeleteStatusType.ACTIVE);
         repository.save(entity);
         CreateAccountResponse response = new CreateAccountResponse();
         BeanUtils.copyProperties(entity, response);
