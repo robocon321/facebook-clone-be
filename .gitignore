@@ -52,3 +52,6 @@ zipkin-server/*
 coverage-report/*
 !coverage-report/pom.xml
 !coverage-report/src/**
+
+# File service
+file-service/src/main/resources/static
