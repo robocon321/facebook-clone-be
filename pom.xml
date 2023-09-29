@@ -18,6 +18,7 @@
 		<module>account-service</module>
 		<module>auth-service</module>
 		<module>coverage-report</module>
+		<module>file-service</module>
 	</modules>
 	<dependencies>
 		<dependency>
