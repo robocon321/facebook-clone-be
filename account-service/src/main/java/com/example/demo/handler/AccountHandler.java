@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 
 import com.example.demo.exception.BlockAccountException;
+import com.example.demo.exception.ConflictAccountException;
 import com.example.demo.exception.NotFoundAccountException;
 
 @ControllerAdvice
@@ -23,7 +24,12 @@ public class AccountHandler {
     public ResponseEntity<Object> handleBlockAccountException(BlockAccountException ex) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
     }
-    
+
+    @ExceptionHandler(ConflictAccountException.class)
+    public ResponseEntity<Object> handleConflictAccountException(ConflictAccountException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+    }
+
 	@ExceptionHandler(BindException.class)
 	public ResponseEntity<Object> argumentNotValidMultipartExceptionHandler(BindException ex, WebRequest request) {
 		String message = "";

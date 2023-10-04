@@ -1,0 +1,92 @@
+Table account {
+  account_id int [primary key]
+  email varchar(100) [not null]
+  phone varchar(100) [not null]
+  password varchar(100) [not null]
+  first_name varchar(200) [not null]
+  last_name varchar(200) [not null]
+  birthday datetime [not null]
+  gender char(1) [not null]
+  profile_picture_url varchar(2000)
+  cover_photo_url varchar(2000)
+  bio varchar(100)
+  location char(2)
+  website varchar(100)
+  create_time datetime [not null]
+  mod_time datetime [not null]
+  status char(1) [not null]
+}
+
+Table login_history {
+  login_history_id int [primary key]
+  account_id int [not null]
+  login_time timestamp [not null]
+  ip_address varchar(45) [not null]
+  device_info varchar(255) [not null]
+  status char(1) [not null]
+}
+Ref: login_history.account_id > account.account_id
+
+
+Table post {
+  post_id int [primary key]
+  account_id int [not null]
+  content int [not null]
+  privacy char(1) [not null]
+  create_time datetime [not null]
+  mod_time datetime [not null]
+  status char(1) [not null]
+}
+Ref: post.account_id > account.account_id
+
+
+Table image_post {
+  image_post_id int [primary key]
+  post_id int [not null]
+  note varchar(2000) [not null]
+  image_url varchar(2000) [not null]
+  create_time datetime [not null]
+  mod_time datetime [not null]
+  status char(1) [not null]
+}
+Ref: image_post.image_post_id > post.post_id
+
+
+Table text_image_post {
+  text_id int [primary key]
+  image_post_id int [not null]
+  x_pos double [not null]
+  y_pos double [not null]
+  color char(2) [not null]
+}
+Ref: text_image_post.image_post_id > image_post.image_post_id
+
+
+Table tag {
+  tag_id int [primary key]
+  account_id int [not null]
+  item_id int [not null]
+  item_type char(3) [not null]
+}
+Ref: tag.account_id > account.account_id
+
+
+Table video_post {
+  video_id int [primary key]
+  video_url varchar(2000) [not null]
+  post_id int [not null]
+}
+Ref: video_post.post_id > post.post_id
+
+
+Table friend_ship {
+  friendship_id int [primary key]
+  account1_id int [not null]
+  account2_id int [not null]
+  status char(1) [not null]
+  action_account_id int [not null]
+  request_time datetime [not null]
+}
+Ref: friend_ship.account1_id > account.account_id
+Ref: friend_ship.account2_id > account.account_id
+Ref: friend_ship.action_account_id > account.account_id

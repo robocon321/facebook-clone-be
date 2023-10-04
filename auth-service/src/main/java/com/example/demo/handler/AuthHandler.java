@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 
+import com.example.demo.exception.BlockException;
 import com.example.demo.exception.CredentialException;
 import com.example.demo.exception.JwtTokenException;
 import com.example.demo.exception.ResourceCreationException;
@@ -19,7 +20,12 @@ public class AuthHandler {
     public ResponseEntity<Object> handleResourceNotFoundException(ResourceCreationException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
-    
+
+    @ExceptionHandler(BlockException.class)
+    public ResponseEntity<Object> handleBlockException(BlockException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
+    }
+
 	@ExceptionHandler(BindException.class)
 	public ResponseEntity<Object> argumentNotValidMultipartExceptionHandler(BindException ex, WebRequest request) {
 		String message = "";

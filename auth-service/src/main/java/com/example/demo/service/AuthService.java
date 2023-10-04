@@ -12,10 +12,12 @@ import com.example.demo.config.CustomUserDetails;
 import com.example.demo.dto.request.CreateAccountRequest;
 import com.example.demo.dto.response.CreateAccountResponse;
 import com.example.demo.entity.Account;
+import com.example.demo.exception.BlockException;
 import com.example.demo.exception.JwtTokenException;
 import com.example.demo.provider.JwtProvider;
 import com.example.demo.repository.AccountRepository;
 import com.example.demo.type.DeleteStatusType;
+import com.example.demo.utils.FBStringUtils;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -42,13 +44,15 @@ public class AuthService {
     	Account entity = new Account();
     	BeanUtils.copyProperties(request, entity);
     	entity.setStatus(DeleteStatusType.ACTIVE);
+    	entity.setWebsite(FBStringUtils.generateRandomString(10));
         repository.save(entity);
         CreateAccountResponse response = new CreateAccountResponse();
         BeanUtils.copyProperties(entity, response);
         return response;
     }
 
-    public String generateToken(CustomUserDetails userDetails) {
+    public String generateToken(CustomUserDetails userDetails) throws RuntimeException {
+		if(userDetails.getAccount().getStatus() == DeleteStatusType.INACTIVE) throw new BlockException("Your account is blocked");
 		Date now = new Date();
 		Date expiryDate = new Date(now.getTime() + jwtExpiration);
 		return Jwts.builder()

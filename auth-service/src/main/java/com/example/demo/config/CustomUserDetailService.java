@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.demo.entity.Account;
 import com.example.demo.repository.AccountRepository;
+import com.example.demo.type.DeleteStatusType;
 
 
 @Service

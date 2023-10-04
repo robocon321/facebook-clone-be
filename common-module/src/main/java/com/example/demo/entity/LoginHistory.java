@@ -9,6 +9,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,16 +20,17 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @Entity
 @Table(name = "`login_history`")
-@Builder
 public class LoginHistory {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer loginId;
 
-	@Column(nullable = false)
-	private Integer accountId;
+	@ManyToOne
+	@JoinColumn(name = "account_id", nullable = false)
+	private Account account;
 	
 	@Column(nullable = false)
 	private Timestamp loginTime;

@@ -1,16 +1,17 @@
 package com.example.demo.entity;
 
 import java.sql.Date;
+import java.util.List;
 
 import com.example.demo.type.DeleteStatusType;
 import com.example.demo.type.GenderType;
 
-import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.PostLoad;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
@@ -23,18 +24,18 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @Entity
 @Table(name = "account")
-@Builder
 public class Account {	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer accountId;
 	
-	@Column(unique = true, length = 100)
+	@Column(unique = true, length = 100, nullable = false)
 	private String email;
 
-	@Column(unique = true, length = 15)
+	@Column(unique = true, length = 15, nullable = false)
 	private String phone;
 
 	@Column(nullable = false, length = 100)
@@ -67,7 +68,7 @@ public class Account {
 	@Column(length = 2)
 	private String location;
 	
-	@Column(length = 100)
+	@Column(nullable = false, length = 100, unique = true)
 	private String website;
 	
 	@Transient
@@ -87,4 +88,13 @@ public class Account {
         this.gender = GenderType.of(genderValue);
         this.status = DeleteStatusType.of(statusValue);
     }
+    
+    @OneToMany(mappedBy = "account")
+    private List<LoginHistory> loginHistories;
+    
+    @OneToMany(mappedBy = "sender")
+    private List<Friendship> senders;
+
+    @OneToMany(mappedBy = "receiver")
+    private List<Friendship> receiver;
 }

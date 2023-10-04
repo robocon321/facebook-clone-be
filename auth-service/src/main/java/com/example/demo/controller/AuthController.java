@@ -19,6 +19,7 @@ import com.example.demo.config.CustomUserDetails;
 import com.example.demo.dto.request.CreateAccountRequest;
 import com.example.demo.dto.request.LoginRequest;
 import com.example.demo.dto.response.CreateAccountResponse;
+import com.example.demo.exception.BlockException;
 import com.example.demo.exception.CredentialException;
 import com.example.demo.exception.JwtTokenException;
 import com.example.demo.exception.ResourceCreationException;
@@ -47,7 +48,7 @@ public class AuthController {
     }
 
     @PostMapping("/token")
-    public String getToken(@Valid @RequestBody LoginRequest request, @RequestHeader HttpHeaders httpHeaders) {
+    public String getToken(@Valid @RequestBody LoginRequest request) {
     	try {
             Authentication authenticate = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));    		
             if (authenticate.isAuthenticated()) {
@@ -55,9 +56,12 @@ public class AuthController {
             } else {
                 throw new JwtTokenException("Invalid access");
             }
+    	} catch(BlockException e) {
+    		e.printStackTrace();
+    		throw e;
     	} catch(Exception e) {
     		e.printStackTrace();
-    		throw new CredentialException("Username or password is incorrect");
+    		throw new CredentialException("Username or password is incorrect");    		
     	}
     }
 
