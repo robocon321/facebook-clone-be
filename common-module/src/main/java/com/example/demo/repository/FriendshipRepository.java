@@ -19,6 +19,7 @@ public interface FriendshipRepository extends JpaRepository<Friendship, Integer>
     
 //    Optional<Friendship> findByReceiverIdAndSenderIdOrderByRequestTimeDesc(@Param("receiver_id") Integer receiverId, @Param("sender_id") Integer senderId);
 
-    @Query(value = "SELECT TOP 1 * FROM friendship u WHERE (u.receiver_id = :receiver_id AND u.sender_id = :sender_id) OR (u.receiver_id = :sender_id AND u.sender_id = :receiver_id) ORDER BY request_time DESC", nativeQuery = true)
+    @Query(value = "SELECT * FROM friendship u WHERE (u.receiver_id = :receiver_id AND u.sender_id = :sender_id) OR (u.receiver_id = :sender_id AND u.sender_id = :receiver_id)", nativeQuery = true)
     Optional<Friendship> customFindByReceiverIdAndSenderId(@Param("receiver_id") Integer receiverId, @Param("sender_id") Integer senderId);
+
 }
