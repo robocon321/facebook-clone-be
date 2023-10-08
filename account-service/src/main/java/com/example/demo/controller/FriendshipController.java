@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.provider.JwtProvider;
-import com.example.demo.request.AcceptFriendshipRequest;
 import com.example.demo.request.CreateFriendshipRequest;
 import com.example.demo.response.FriendshipResponse;
 import com.example.demo.service.FriendshipService;
