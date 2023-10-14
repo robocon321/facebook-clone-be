@@ -79,7 +79,7 @@ Table video_post {
 Ref: video_post.post_id > post.post_id
 
 
-Table friend_ship {
+Table friendship {
   friendship_id int [primary key]
   account1_id int [not null]
   account2_id int [not null]
@@ -87,6 +87,16 @@ Table friend_ship {
   action_account_id int [not null]
   request_time datetime [not null]
 }
-Ref: friend_ship.account1_id > account.account_id
-Ref: friend_ship.account2_id > account.account_id
-Ref: friend_ship.action_account_id > account.account_id
+Ref: friendship.account1_id > account.account_id
+Ref: friendship.account2_id > account.account_id
+Ref: friendship.action_account_id > account.account_id
+
+
+Table checkin {
+	checkin_id int [primary key],
+	longitude varchar(50) [not null],
+	latitude varchar(50) [not null],
+	city varchar(50) [not null],
+	country varchar(50) [not null],
+	address varchar(50)  [not null]
+}
