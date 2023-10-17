@@ -27,7 +27,7 @@ public class SecurityConfig {
 		config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
 
 		return http.csrf().disable()
-				.authorizeExchange(exchanges -> exchanges.pathMatchers("/account/**", "/friendship/**").authenticated()
+				.authorizeExchange(exchanges -> exchanges.pathMatchers("/account/**", "/friendship/**", "/post/**").authenticated()
 						.anyExchange().permitAll()
 						.and()
 						.cors().configurationSource(request -> config)

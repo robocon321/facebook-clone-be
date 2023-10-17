@@ -11,9 +11,8 @@ import org.springframework.stereotype.Service;
 import com.example.demo.config.CustomUserDetails;
 import com.example.demo.dto.request.CreateAccountRequest;
 import com.example.demo.dto.response.CreateAccountResponse;
-import com.example.demo.entity.Account;
+import com.example.demo.entity.AccountEntity;
 import com.example.demo.exception.BlockException;
-import com.example.demo.exception.JwtTokenException;
 import com.example.demo.provider.JwtProvider;
 import com.example.demo.repository.AccountRepository;
 import com.example.demo.type.DeleteStatusType;
@@ -41,7 +40,7 @@ public class AuthService {
     private JwtProvider jwtProvider;
     
     public CreateAccountResponse saveAccount(CreateAccountRequest request) throws RuntimeException {
-    	Account entity = new Account();
+    	AccountEntity entity = new AccountEntity();
     	BeanUtils.copyProperties(request, entity);
     	entity.setStatus(DeleteStatusType.ACTIVE);
     	entity.setWebsite(FBStringUtils.generateRandomString(10));

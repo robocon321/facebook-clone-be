@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.demo.dto.request.CheckinRequest;
 import com.example.demo.dto.response.CheckinResponse;
-import com.example.demo.entity.Checkin;
+import com.example.demo.entity.CheckinEntity;
 import com.example.demo.repository.CheckinRepository;
 import com.example.demo.response.PageResponse;
 
@@ -34,7 +34,7 @@ public class CheckinService {
 			Sort sort = Sort.by(orders);
 			pageable = PageRequest.of(request.getPage(), request.getSize(), sort);
 		}
-		Page<Checkin> pageEntity = checkinRepository.searchCheckin(request.getSearch(), pageable);
+		Page<CheckinEntity> pageEntity = checkinRepository.searchCheckin(request.getSearch(), pageable);
 		List<CheckinResponse> pageDTO = pageEntity.stream()
 				.map(checkin -> {
 					CheckinResponse response = new CheckinResponse();

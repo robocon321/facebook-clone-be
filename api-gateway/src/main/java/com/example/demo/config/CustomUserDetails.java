@@ -6,7 +6,7 @@ import java.util.Collection;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import com.example.demo.entity.Account;
+import com.example.demo.entity.AccountEntity;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -14,7 +14,7 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class CustomUserDetails implements UserDetails {
-	private Account account;
+	private AccountEntity account;
 	
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {

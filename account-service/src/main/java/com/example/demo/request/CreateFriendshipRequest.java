@@ -1,6 +1,6 @@
 package com.example.demo.request;
 
-import com.example.demo.type.FriendshipStatus;
+import com.example.demo.type.FriendshipStatusType;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -13,5 +13,5 @@ public class CreateFriendshipRequest {
 	private Integer receiverId;
 	
 	@NotNull(message = "Status is not null")
-	private FriendshipStatus status;
+	private FriendshipStatusType status;
 }

@@ -12,9 +12,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import com.example.demo.entity.Account;
-import com.example.demo.exception.BlockAccountException;
-import com.example.demo.exception.NotFoundAccountException;
+import com.example.demo.entity.AccountEntity;
+import com.example.demo.exception.BlockException;
+import com.example.demo.exception.NotFoundException;
 import com.example.demo.provider.JwtProvider;
 import com.example.demo.repository.AccountRepository;
 import com.example.demo.request.AccountFriendshipRequest;
@@ -32,12 +32,12 @@ public class AccountService {
 
 	public AccountSummaryInfoResponse getSummaryInfo(String token) {
 		Integer id = jwtProvider.getAccountIdFromJWT(token);
-		Optional<Account> accountOpt = accountRepository.findById(id);
+		Optional<AccountEntity> accountOpt = accountRepository.findById(id);
 		if (accountOpt.isEmpty())
-			throw new NotFoundAccountException("Your account does not exists");
-		Account account = accountOpt.get();
+			throw new NotFoundException("Your account does not exists");
+		AccountEntity account = accountOpt.get();
 		if (account.getStatus() == DeleteStatusType.INACTIVE)
-			throw new BlockAccountException("Your account is blocked. Please contact us to active your account");
+			throw new BlockException("Your account is blocked. Please contact us to active your account");
 		AccountSummaryInfoResponse response = new AccountSummaryInfoResponse();
 		BeanUtils.copyProperties(account, response);
 		return response;
@@ -46,9 +46,9 @@ public class AccountService {
 	public PageResponse getListAccountByFriendshipStatus(AccountFriendshipRequest request,
 			String token) {
 		Integer currentId = jwtProvider.getAccountIdFromJWT(token);
-		Optional<Account> accountOpt = accountRepository.findById(currentId);
+		Optional<AccountEntity> accountOpt = accountRepository.findById(currentId);
 		if (accountOpt.isEmpty())
-			throw new NotFoundAccountException("Your account does not exists");
+			throw new NotFoundException("Your account does not exists");
 		Pageable pageable = null;
 		if(request.getSortBy() == null) {
 			pageable = PageRequest.of(request.getPage(), request.getSize());
@@ -60,7 +60,7 @@ public class AccountService {
 			Sort sort = Sort.by(orders);
 			pageable = PageRequest.of(request.getPage(), request.getSize(), sort);
 		}
-		Page<Account> pageEntity;
+		Page<AccountEntity> pageEntity;
 		if(request.getExcludeIds().size() == 0) {
 			pageEntity = accountRepository.findByCurrentIdAndFriendshipStatus(
 					currentId,

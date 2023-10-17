@@ -15,7 +15,7 @@ import com.example.demo.request.AccountFriendshipRequest;
 import com.example.demo.response.AccountSummaryInfoResponse;
 import com.example.demo.response.PageResponse;
 import com.example.demo.service.AccountService;
-import com.example.demo.type.FriendshipStatus;
+import com.example.demo.type.FriendshipStatusType;
 
 import jakarta.validation.Valid;
 

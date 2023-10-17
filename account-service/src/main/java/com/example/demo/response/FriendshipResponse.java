@@ -2,7 +2,7 @@ package com.example.demo.response;
 
 import java.sql.Timestamp;
 
-import com.example.demo.type.FriendshipStatus;
+import com.example.demo.type.FriendshipStatusType;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,6 +12,6 @@ import lombok.NoArgsConstructor;
 public class FriendshipResponse {
 	private Integer friendshipId;
 	private Integer receiverId;
-	private FriendshipStatus status;
+	private FriendshipStatusType status;
 	private Timestamp requestTime;
 }

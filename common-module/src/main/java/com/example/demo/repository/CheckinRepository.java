@@ -7,11 +7,11 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import com.example.demo.entity.Checkin;
+import com.example.demo.entity.CheckinEntity;
 
 @Repository
-public interface CheckinRepository extends JpaRepository<Checkin, Integer> {
+public interface CheckinRepository extends JpaRepository<CheckinEntity, Integer> {
 	@Query(value = "SELECT * FROM checkin WHERE country LIKE %:search% OR address LIKE %:search% OR city LIKE %:search%", nativeQuery = true)
-	Page<Checkin> searchCheckin(@Param("search") String search, Pageable pageable);
+	Page<CheckinEntity> searchCheckin(@Param("search") String search, Pageable pageable);
 
 }
