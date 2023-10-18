@@ -34,13 +34,13 @@ public class CheckinEntity {
 	@Column(nullable = false, columnDefinition = "VARCHAR(50)")
 	private String latitude;
 	
-	@Column(columnDefinition = "VARCHAR(50)")
+	@Column(columnDefinition = "NVARCHAR(50)")
 	private String city;
 	
-	@Column(nullable = false, columnDefinition = "VARCHAR(50)")
+	@Column(nullable = false, columnDefinition = "NVARCHAR(50)")
 	private String country;
 	
-	@Column(columnDefinition = "VARCHAR(50)")
+	@Column(columnDefinition = "NVARCHAR(50)")
 	private String address;
 	
 	@OneToMany(mappedBy = "checkin",fetch = FetchType.LAZY)

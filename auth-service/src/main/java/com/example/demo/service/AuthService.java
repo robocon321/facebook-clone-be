@@ -16,7 +16,7 @@ import com.example.demo.exception.BlockException;
 import com.example.demo.provider.JwtProvider;
 import com.example.demo.repository.AccountRepository;
 import com.example.demo.type.DeleteStatusType;
-import com.example.demo.utils.FBStringUtils;
+import com.example.demo.utils.HandleStringUtils;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -43,7 +43,7 @@ public class AuthService {
     	AccountEntity entity = new AccountEntity();
     	BeanUtils.copyProperties(request, entity);
     	entity.setStatus(DeleteStatusType.ACTIVE);
-    	entity.setWebsite(FBStringUtils.generateRandomString(10));
+    	entity.setWebsite(HandleStringUtils.generateRandomString(10));
         repository.save(entity);
         CreateAccountResponse response = new CreateAccountResponse();
         BeanUtils.copyProperties(entity, response);

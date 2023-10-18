@@ -38,6 +38,7 @@ public class PostEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer postId;
 
+	@Column(columnDefinition = "NVARCHAR(500)")
 	private String text;
 	
 	private Integer emotionId;

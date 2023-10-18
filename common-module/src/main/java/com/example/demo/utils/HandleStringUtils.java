@@ -2,7 +2,7 @@ package com.example.demo.utils;
 
 import java.security.SecureRandom;
 
-public class FBStringUtils {
+public class HandleStringUtils {
     private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     private static final SecureRandom RANDOM = new SecureRandom();
 

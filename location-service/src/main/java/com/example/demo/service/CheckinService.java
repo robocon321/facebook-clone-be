@@ -15,14 +15,14 @@ import com.example.demo.dto.request.CheckinRequest;
 import com.example.demo.dto.response.CheckinResponse;
 import com.example.demo.entity.CheckinEntity;
 import com.example.demo.repository.CheckinRepository;
-import com.example.demo.response.PageResponse;
+import com.example.demo.response.CustomPageResponse;
 
 @Service
 public class CheckinService {
 	@Autowired
 	private CheckinRepository checkinRepository;
 	
-	public PageResponse search(CheckinRequest request) {
+	public CustomPageResponse search(CheckinRequest request) {
 		Pageable pageable = null;
 		if(request.getSortBy() == null) {
 			pageable = PageRequest.of(request.getPage(), request.getSize());
@@ -42,7 +42,7 @@ public class CheckinService {
 					return response;
 				}).toList();
 		
-		PageResponse pageResponse = PageResponse.builder()
+		CustomPageResponse pageResponse = CustomPageResponse.builder()
 				.data(pageDTO)
 				.totalItem(pageEntity.getTotalElements())
 				.totalPage(pageEntity.getTotalPages()).build();

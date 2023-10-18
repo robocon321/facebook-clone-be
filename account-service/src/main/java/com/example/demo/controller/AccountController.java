@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.request.AccountFriendshipRequest;
 import com.example.demo.response.AccountSummaryInfoResponse;
-import com.example.demo.response.PageResponse;
+import com.example.demo.response.CustomPageResponse;
 import com.example.demo.service.AccountService;
 import com.example.demo.type.FriendshipStatusType;
 
@@ -36,7 +36,7 @@ public class AccountController {
 	}
 	
 	@GetMapping("/account-friendship")
-	public PageResponse getListFriendshipStatus(@ModelAttribute @Valid AccountFriendshipRequest request, @RequestHeader HttpHeaders headers) {
+	public CustomPageResponse getListFriendshipStatus(@ModelAttribute @Valid AccountFriendshipRequest request, @RequestHeader HttpHeaders headers) {
 		String bearerToken = headers.getFirst("Authorization");
 		if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
 			String token = bearerToken.substring(7);

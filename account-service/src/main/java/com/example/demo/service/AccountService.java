@@ -19,7 +19,7 @@ import com.example.demo.provider.JwtProvider;
 import com.example.demo.repository.AccountRepository;
 import com.example.demo.request.AccountFriendshipRequest;
 import com.example.demo.response.AccountSummaryInfoResponse;
-import com.example.demo.response.PageResponse;
+import com.example.demo.response.CustomPageResponse;
 import com.example.demo.type.DeleteStatusType;
 
 @Service
@@ -43,7 +43,7 @@ public class AccountService {
 		return response;
 	}
 
-	public PageResponse getListAccountByFriendshipStatus(AccountFriendshipRequest request,
+	public CustomPageResponse getListAccountByFriendshipStatus(AccountFriendshipRequest request,
 			String token) {
 		Integer currentId = jwtProvider.getAccountIdFromJWT(token);
 		Optional<AccountEntity> accountOpt = accountRepository.findById(currentId);
@@ -83,7 +83,7 @@ public class AccountService {
 					BeanUtils.copyProperties(account, response);
 					return response;
 				}).toList();
-		PageResponse pageResponse = PageResponse.builder()
+		CustomPageResponse pageResponse = CustomPageResponse.builder()
 				.data(pageDTO)
 				.totalItem(pageEntity.getTotalElements())
 				.totalPage(pageEntity.getTotalPages()).build();
