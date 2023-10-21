@@ -24,6 +24,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.example.demo.entity.AccountEntity;
 import com.example.demo.entity.CheckinEntity;
+import com.example.demo.entity.EmotionPostEntity;
 import com.example.demo.entity.FileEntity;
 import com.example.demo.entity.FriendshipEntity;
 import com.example.demo.entity.ImagePostEntity;
@@ -35,6 +36,7 @@ import com.example.demo.exception.BadRequestException;
 import com.example.demo.exception.NotFoundException;
 import com.example.demo.repository.AccountRepository;
 import com.example.demo.repository.CheckinRepository;
+import com.example.demo.repository.EmotionPostRepository;
 import com.example.demo.repository.FileRepository;
 import com.example.demo.repository.FriendshipRepository;
 import com.example.demo.repository.PostRepository;
@@ -43,6 +45,7 @@ import com.example.demo.request.CustomPageRequest;
 import com.example.demo.response.AccountResponse;
 import com.example.demo.response.CheckinResponse;
 import com.example.demo.response.CustomPageResponse;
+import com.example.demo.response.EmotionPostResponse;
 import com.example.demo.response.FileResponse;
 import com.example.demo.response.ImagePostResponse;
 import com.example.demo.response.PostResponse;
@@ -233,11 +236,8 @@ public class PostService {
 			PostResponse postResponse = mapToPostResponse(item);
 			postResponses.add(postResponse);
 		});
-		return CustomPageResponse.builder()
-				.totalItem(pagePost.getTotalElements())
-				.totalPage(pagePost.getTotalPages())
-				.data(postResponses)
-				.build();
+		return CustomPageResponse.builder().totalItem(pagePost.getTotalElements()).totalPage(pagePost.getTotalPages())
+				.data(postResponses).build();
 	}
 
 	public PostResponse mapToPostResponse(PostEntity post) {
@@ -290,11 +290,11 @@ public class PostService {
 					imagePostItem.getTagImagePosts().forEach(item -> {
 						TagImagePostResponse tagImagePostResponse = new TagImagePostResponse();
 						BeanUtils.copyProperties(item, tagImagePostResponse);
-						
+
 						AccountResponse tagImagePostAccountResponse = new AccountResponse();
 						BeanUtils.copyProperties(item.getAccount(), tagImagePostAccountResponse);
 						tagImagePostResponse.setAccount(tagImagePostAccountResponse);
-						
+
 						tagImagePostResponses.add(tagImagePostResponse);
 					});
 					imagePostResponse.setTagImagePosts(tagImagePostResponses);
@@ -313,6 +313,19 @@ public class PostService {
 				imagePostResponses.add(imagePostResponse);
 			});
 			postResponse.setImages(imagePostResponses);
+		}
+
+		if (post.getEmotions().size() > 0) {
+			List<EmotionPostResponse> responses = post.getEmotions().stream().map(item -> {
+				EmotionPostResponse emotionPostResponse = new EmotionPostResponse();
+				BeanUtils.copyProperties(item, emotionPostResponse);
+
+				AccountResponse accountResponse = new AccountResponse();
+				BeanUtils.copyProperties(item.getAccount(), accountResponse);
+				emotionPostResponse.setAccount(accountResponse);
+				return emotionPostResponse;
+			}).toList();
+			postResponse.setEmotions(responses);
 		}
 
 		return postResponse;

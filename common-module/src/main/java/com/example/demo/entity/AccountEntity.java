@@ -107,4 +107,10 @@ public class AccountEntity {
     
     @OneToMany(mappedBy = "account", fetch = FetchType.LAZY)
     private List<TagImagePostEntity> tagImagePosts;
+
+    @OneToMany(mappedBy = "account", fetch = FetchType.LAZY)
+    private List<CommentEntity> comments;
+
+    @OneToMany(mappedBy = "account", fetch = FetchType.LAZY)
+    private List<EmotionPostEntity> emotions;
 }

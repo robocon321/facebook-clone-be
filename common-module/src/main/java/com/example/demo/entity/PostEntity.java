@@ -93,4 +93,10 @@ public class PostEntity {
 
     @OneToMany(cascade = {CascadeType.PERSIST}, fetch = FetchType.LAZY, mappedBy = "post")
     private List<VideoPostEntity> videoPosts;
+
+    @OneToMany(cascade = {CascadeType.PERSIST}, fetch = FetchType.LAZY, mappedBy = "post")
+    private List<CommentEntity> comments;
+
+    @OneToMany(cascade = {CascadeType.PERSIST}, fetch = FetchType.LAZY, mappedBy = "post")
+    private List<EmotionPostEntity> emotions;
 }
