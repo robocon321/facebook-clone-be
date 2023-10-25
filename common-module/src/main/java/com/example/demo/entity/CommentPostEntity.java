@@ -3,6 +3,7 @@ package com.example.demo.entity;
 import java.sql.Timestamp;
 import java.util.List;
 
+import com.example.demo.type.DeleteStatusType;
 import com.example.demo.type.FileStatusType;
 
 import jakarta.persistence.Column;
@@ -30,7 +31,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @Entity
 @Table(name = "comment")
-public class CommentEntity {
+public class CommentPostEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer commentId;
@@ -51,10 +52,10 @@ public class CommentEntity {
 
 	@ManyToOne
 	@JoinColumn(name = "parent_id")
-	private CommentEntity parent;	
+	private CommentPostEntity parent;	
 	
     @OneToMany(mappedBy = "parent", fetch = FetchType.LAZY)
-    private List<CommentEntity> children;
+    private List<CommentPostEntity> children;
 	
 	@Column(nullable = false)
 	private Timestamp createTime;
@@ -62,9 +63,13 @@ public class CommentEntity {
 	@Column(nullable = false)
 	private Timestamp modTime;
 	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "file_id")
+	private FileEntity file;
+	
 	@Transient
-	private FileStatusType status;
-
+	private DeleteStatusType status;
+	
 	@Column(nullable = false, name = "status", columnDefinition = "CHAR(1)")
 	private Character statusValue;
 
@@ -76,6 +81,6 @@ public class CommentEntity {
 
     @PostLoad
     void fillGenderTransient() {
-        this.status = FileStatusType.of(statusValue);
+        this.status = DeleteStatusType.of(statusValue);
     }	
 }

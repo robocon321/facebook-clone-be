@@ -1,4 +1,4 @@
-package com.example.demo;
+package com.example.demo.response;
 
 import java.sql.Timestamp;
 
@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 public class FileResponse {
 	private Integer fileId;
 	private String name;
+	private String type;
 	private Timestamp createTime;
 	private Long size;
 	private FileStatusType status;

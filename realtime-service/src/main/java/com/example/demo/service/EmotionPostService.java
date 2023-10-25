@@ -21,7 +21,6 @@ import com.example.demo.response.EmotionPostResponse;
 import com.example.demo.type.DeleteStatusType;
 import com.example.demo.type.EmotionType;
 
-import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 
 @Service

@@ -39,6 +39,9 @@ public class FileEntity {
 	@Column(nullable = false)
 	private Long size;
 	
+	@Column(nullable = false, columnDefinition = "VARCHAR(20)")
+	private String type;
+
 	@Transient
 	private FileStatusType status;
 

@@ -16,7 +16,6 @@ import org.springframework.web.socket.messaging.SessionConnectEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
 import com.example.demo.provider.JwtProvider;
-import com.example.demo.request.CommentPostRequest;
 import com.example.demo.response.EmotionPostResponse;
 import com.example.demo.service.EmotionPostService;
 import com.example.demo.type.EmotionType;

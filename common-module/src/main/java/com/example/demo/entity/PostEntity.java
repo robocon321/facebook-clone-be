@@ -95,7 +95,7 @@ public class PostEntity {
     private List<VideoPostEntity> videoPosts;
 
     @OneToMany(cascade = {CascadeType.PERSIST}, fetch = FetchType.LAZY, mappedBy = "post")
-    private List<CommentEntity> comments;
+    private List<CommentPostEntity> comments;
 
     @OneToMany(cascade = {CascadeType.PERSIST}, fetch = FetchType.LAZY, mappedBy = "post")
     private List<EmotionPostEntity> emotions;

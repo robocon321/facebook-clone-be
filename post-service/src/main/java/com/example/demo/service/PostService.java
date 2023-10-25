@@ -2,6 +2,7 @@ package com.example.demo.service;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.IntStream;
@@ -24,6 +25,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.example.demo.entity.AccountEntity;
 import com.example.demo.entity.CheckinEntity;
+import com.example.demo.entity.CommentPostEntity;
 import com.example.demo.entity.EmotionPostEntity;
 import com.example.demo.entity.FileEntity;
 import com.example.demo.entity.FriendshipEntity;
@@ -44,6 +46,7 @@ import com.example.demo.request.CreatePostRequest;
 import com.example.demo.request.CustomPageRequest;
 import com.example.demo.response.AccountResponse;
 import com.example.demo.response.CheckinResponse;
+import com.example.demo.response.CommentPostResponse;
 import com.example.demo.response.CustomPageResponse;
 import com.example.demo.response.EmotionPostResponse;
 import com.example.demo.response.FileResponse;
@@ -327,7 +330,52 @@ public class PostService {
 			}).toList();
 			postResponse.setEmotions(responses);
 		}
+		
+		if(post.getComments().size() > 0) {
+			List<CommentPostResponse> responses = post.getComments().stream().map(item -> mapEntityToDTO(item)).toList();
+			postResponse.setComments(responses);
+		}
 
 		return postResponse;
 	}
+	
+	private CommentPostResponse mapEntityToDTO(CommentPostEntity entity) {
+		CommentPostResponse response = new CommentPostResponse();
+		BeanUtils.copyProperties(entity, response);
+
+		AccountResponse accountResponse = new AccountResponse();
+		AccountEntity account = entity.getAccount();
+		BeanUtils.copyProperties(account, accountResponse);
+		response.setAccount(accountResponse);
+
+		if (entity.getParent() != null) {
+			response.setParentId(entity.getParent().getCommentId());
+		}
+
+		if (entity.getFile() != null) {
+			FileEntity fileEntity = entity.getFile();
+			FileResponse fileResponse = new FileResponse();
+			BeanUtils.copyProperties(fileEntity, fileResponse);
+			response.setFile(fileResponse);
+		}
+
+		if (entity.getMentionedAccounts() == null) {
+			int[] mentions = Arrays.stream(entity.getMentionedAccounts().split(",")).mapToInt(Integer::parseInt)
+					.toArray();
+
+			for (int i = 0; i < mentions.length; i++) {
+				int accountMentionId = mentions[i];
+				Optional<AccountEntity> accountMentionOpt = accountRepository.findById(accountMentionId);
+				if (accountMentionOpt.isEmpty())
+					throw new NotFoundException("Mention AccountID: " + accountMentionId);
+				AccountEntity accountMention = accountMentionOpt.get();
+				AccountResponse accountMenResponse = new AccountResponse();
+				BeanUtils.copyProperties(accountMention, accountMenResponse);
+			}
+
+		}
+
+		return response;
+	}
+
 }

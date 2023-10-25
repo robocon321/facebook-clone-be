@@ -36,4 +36,5 @@ public class PostResponse {
     private List<ImagePostResponse> images;
     private List<VideoPostResponse> videos;
     private List<EmotionPostResponse> emotions;
+    private List<CommentPostResponse> comments;
 }

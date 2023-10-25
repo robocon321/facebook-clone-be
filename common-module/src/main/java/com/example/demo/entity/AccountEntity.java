@@ -109,7 +109,7 @@ public class AccountEntity {
     private List<TagImagePostEntity> tagImagePosts;
 
     @OneToMany(mappedBy = "account", fetch = FetchType.LAZY)
-    private List<CommentEntity> comments;
+    private List<CommentPostEntity> comments;
 
     @OneToMany(mappedBy = "account", fetch = FetchType.LAZY)
     private List<EmotionPostEntity> emotions;

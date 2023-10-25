@@ -25,6 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.entity.FileEntity;
 import com.example.demo.repository.FileRepository;
+import com.example.demo.response.FileResponse;
 import com.example.demo.type.FileStatusType;
 
 //Annotation
@@ -47,6 +48,7 @@ public class FileController {
 			String fileName = saveMultipart(file, PATH_RESOURCE , generateName);
 			FileEntity entity = FileEntity.builder()
 					.name(fileName)
+					.type(file.getContentType())
 					.createTime(new Timestamp(System.currentTimeMillis()))
 					.size(file.getSize())
 					.status(FileStatusType.ACTIVE)
