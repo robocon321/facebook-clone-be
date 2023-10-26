@@ -136,7 +136,7 @@ Table comment {
   post_id int [not null]
   account_id int [not null]
   text nvarchar(1000)
-  mentioned_users varchar(100)
+  mentioned_accounts varchar(100)
   parent_id int [not null]
   create_time timestamp [not null]
   mod_time timestamp [not null]
@@ -160,3 +160,16 @@ Table emotion_post {
 Ref: emotion_post.post_id > post.post_id
 Ref: emotion_post.account_id > account.account_id
 
+
+Table emotion_comment {
+  emotion_id int [primary key]
+  comment_id int [not null]
+  account_id int [not null]
+  type char(1) [not null]
+  create_time timestamp [not null]
+  mod_time timestamp [not null]
+  status char(1) [not null]
+}
+
+Ref: emotion_comment.comment_id > comment.comment_id
+Ref: emotion_comment.account_id > account.account_id

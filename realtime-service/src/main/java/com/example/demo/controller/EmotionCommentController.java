@@ -14,52 +14,60 @@ import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.socket.messaging.SessionConnectEvent;
-import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 import org.springframework.web.socket.messaging.SessionSubscribeEvent;
 import org.springframework.web.socket.messaging.SessionUnsubscribeEvent;
 
 import com.example.demo.provider.JwtProvider;
-import com.example.demo.response.EmotionPostResponse;
-import com.example.demo.service.EmotionPostService;
+import com.example.demo.request.EmotionCommentRequest;
+import com.example.demo.response.EmotionCommentResponse;
+import com.example.demo.service.EmotionCommentService;
 import com.example.demo.type.EmotionType;
 
 @Controller
-public class EmotionPostController {
+public class EmotionCommentController {
     private final ConcurrentHashMap<Integer, Map<String, Integer>> userSessions = new ConcurrentHashMap<>();
     
     @Autowired
-    private EmotionPostService emotionPostService;
+    private EmotionCommentService emotionCommentService;
     
 	@Autowired
 	private JwtProvider jwtProvider;
 
     @Autowired
     private SimpMessagingTemplate simpMessagingTemplate;
-    
-    @MessageMapping("/emotion-post/create/{postId}")
-    public void createEmotionPost(@Payload String type, @DestinationVariable Integer postId, SimpMessageHeaderAccessor headerAccessor) throws Exception {    	
-    	EmotionType emotionType = EmotionType.valueOf(type);
-		Integer accountId = userSessions.get(postId).get(headerAccessor.getSessionId());
-    	emotionPostService.saveEmotionPost(emotionType, accountId, postId);
-    	List<EmotionPostResponse> responses = emotionPostService.getListEmotionByPostId(postId);
-    	this.simpMessagingTemplate.convertAndSend("/topic/emotion-post/"+postId, responses);
+        
+    @MessageMapping("/emotion-comment/create/{postId}")
+    public void createEmotionComment(@Payload EmotionCommentRequest request, @DestinationVariable Integer postId, SimpMessageHeaderAccessor headerAccessor) throws Exception {    	
+    	EmotionType emotionType = EmotionType.valueOf(request.getType());
+		Integer accountId = userSessions.get(postId).get(headerAccessor.getSessionId());		
+		emotionCommentService.saveEmotionComment(emotionType, accountId, request.getCommentId());
+
+		List<EmotionCommentResponse> emotions = emotionCommentService.getListEmotionByCommentId(request.getCommentId());
+    	Map<String, Object> response = new HashMap<>();
+    	response.put("commentId", request.getCommentId());
+    	response.put("data", emotions);
+
+    	this.simpMessagingTemplate.convertAndSend("/topic/emotion-comment/"+postId, response);
     }
     
-    @MessageMapping("/emotion-post/delete/{postId}")
-    public void deleteEmotionPost(@DestinationVariable Integer postId, SimpMessageHeaderAccessor headerAccessor) throws Exception {
-		Integer accountId = userSessions.get(postId).get(headerAccessor.getSessionId());
-		emotionPostService.deleteEmotion(accountId, postId);
-    	List<EmotionPostResponse> responses = emotionPostService.getListEmotionByPostId(postId);
-    	this.simpMessagingTemplate.convertAndSend("/topic/emotion-post/"+postId, responses);		
+    @MessageMapping("/emotion-comment/delete/{postId}")
+    public void deleteEmotionCommment(@Payload String commentIdStr, @DestinationVariable Integer postId, SimpMessageHeaderAccessor headerAccessor) throws Exception {
+    	Integer commentId = Integer.parseInt(commentIdStr);
+    	Integer accountId = userSessions.get(postId).get(headerAccessor.getSessionId());
+		emotionCommentService.deleteEmotion(accountId, commentId);
+    	List<EmotionCommentResponse> emotions = emotionCommentService.getListEmotionByCommentId(commentId);
+    	Map<String, Object> response = new HashMap<>();
+    	response.put("commentId", commentId);
+    	response.put("data", emotions);
+    	this.simpMessagingTemplate.convertAndSend("/topic/emotion-comment/"+postId, response);
     }
-    
+
 	@EventListener
 	public void handleWebSocketUnSubcribe(SessionUnsubscribeEvent event) {
 		StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
 
 		String destination = headerAccessor.getNativeHeader("destination").get(0);
-		if (destination.startsWith("/topic/emotion-post/")) {
+		if (destination.startsWith("/topic/emotion-comment/")) {
 			String[] destinationSplit = destination.split("/");
 			Integer postId = Integer.parseInt(destinationSplit[destinationSplit.length - 1]);
 
@@ -76,7 +84,7 @@ public class EmotionPostController {
 		StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
 
 		String destination = headerAccessor.getDestination();
-		if (destination.startsWith("/topic/emotion-post/")) {
+		if (destination.startsWith("/topic/emotion-comment/")) {
 			String senderSession = headerAccessor.getSessionId();
 			String token = headerAccessor.getNativeHeader("token").get(0);
 			Integer senderId = jwtProvider.getAccountIdFromJWT(token);

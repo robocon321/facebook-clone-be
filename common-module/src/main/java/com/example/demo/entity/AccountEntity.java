@@ -112,5 +112,9 @@ public class AccountEntity {
     private List<CommentPostEntity> comments;
 
     @OneToMany(mappedBy = "account", fetch = FetchType.LAZY)
-    private List<EmotionPostEntity> emotions;
+    private List<EmotionPostEntity> emotionPosts;
+
+    @OneToMany(mappedBy = "account", fetch = FetchType.LAZY)
+    private List<EmotionCommentEntity> emotionComments;
+
 }

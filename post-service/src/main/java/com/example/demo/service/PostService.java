@@ -48,6 +48,7 @@ import com.example.demo.response.AccountResponse;
 import com.example.demo.response.CheckinResponse;
 import com.example.demo.response.CommentPostResponse;
 import com.example.demo.response.CustomPageResponse;
+import com.example.demo.response.EmotionCommentResponse;
 import com.example.demo.response.EmotionPostResponse;
 import com.example.demo.response.FileResponse;
 import com.example.demo.response.ImagePostResponse;
@@ -332,14 +333,14 @@ public class PostService {
 		}
 		
 		if(post.getComments().size() > 0) {
-			List<CommentPostResponse> responses = post.getComments().stream().map(item -> mapEntityToDTO(item)).toList();
+			List<CommentPostResponse> responses = post.getComments().stream().map(item -> mapCommentEntityToDTO(item)).toList();
 			postResponse.setComments(responses);
 		}
 
 		return postResponse;
 	}
 	
-	private CommentPostResponse mapEntityToDTO(CommentPostEntity entity) {
+	private CommentPostResponse mapCommentEntityToDTO(CommentPostEntity entity) {
 		CommentPostResponse response = new CommentPostResponse();
 		BeanUtils.copyProperties(entity, response);
 
@@ -359,9 +360,10 @@ public class PostService {
 			response.setFile(fileResponse);
 		}
 
-		if (entity.getMentionedAccounts() == null) {
+		if (entity.getMentionedAccounts() != null && entity.getMentionedAccounts().length() > 0) {
 			int[] mentions = Arrays.stream(entity.getMentionedAccounts().split(",")).mapToInt(Integer::parseInt)
 					.toArray();
+			List<AccountResponse> accountResponses = new ArrayList<>();
 
 			for (int i = 0; i < mentions.length; i++) {
 				int accountMentionId = mentions[i];
@@ -371,10 +373,28 @@ public class PostService {
 				AccountEntity accountMention = accountMentionOpt.get();
 				AccountResponse accountMenResponse = new AccountResponse();
 				BeanUtils.copyProperties(accountMention, accountMenResponse);
+				accountResponses.add(accountMenResponse);
 			}
-
+			
+			response.setMentions(accountResponses);;
 		}
-
+		
+		if(entity.getEmotions() != null) {
+			List<EmotionCommentResponse> emotionCommentResponses = entity.getEmotions().stream().map(item -> {
+				EmotionCommentResponse emotionCommentResponse = new EmotionCommentResponse();
+				BeanUtils.copyProperties(item, emotionCommentResponse);	
+				
+				AccountEntity accountEmotion = item.getAccount();
+				AccountResponse accountEmotionResponse = new AccountResponse();
+				BeanUtils.copyProperties(accountEmotion, accountEmotionResponse);
+				emotionCommentResponse.setAccount(accountResponse);
+				
+				return emotionCommentResponse;
+			}).toList();
+			
+			response.setEmotions(emotionCommentResponses);	
+		}
+		
 		return response;
 	}
 

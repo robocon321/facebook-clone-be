@@ -3,6 +3,8 @@ package com.example.demo.response;
 import java.sql.Timestamp;
 import java.util.List;
 
+import com.example.demo.type.DeleteStatusType;
+
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -17,4 +19,6 @@ public class CommentPostResponse {
 	private Integer parentId;
 	private Timestamp createTime;
 	private Timestamp modTime;
+	private DeleteStatusType status;
+	private List<EmotionCommentResponse> emotions;
 }

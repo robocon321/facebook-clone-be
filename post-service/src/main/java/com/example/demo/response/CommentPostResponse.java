@@ -20,4 +20,5 @@ public class CommentPostResponse {
 	private Timestamp createTime;
 	private Timestamp modTime;
 	private DeleteStatusType status;
+	private List<EmotionCommentResponse> emotions;
 }
