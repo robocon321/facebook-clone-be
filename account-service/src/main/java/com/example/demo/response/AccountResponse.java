@@ -5,7 +5,7 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-public class AccountResponse {	
+public class AccountResponse {
 	private Integer accountId;
 	private String firstName;
 	private String lastName;

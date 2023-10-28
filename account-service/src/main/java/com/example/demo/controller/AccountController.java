@@ -1,21 +1,18 @@
 package com.example.demo.controller;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.request.AccountFriendshipRequest;
-import com.example.demo.response.AccountSummaryInfoResponse;
+import com.example.demo.request.RecommendFriendshipRequest;
+import com.example.demo.response.AccountResponse;
 import com.example.demo.response.CustomPageResponse;
 import com.example.demo.service.AccountService;
-import com.example.demo.type.FriendshipStatusType;
 
 import jakarta.validation.Valid;
 
@@ -26,7 +23,7 @@ public class AccountController {
 	private AccountService accountService;
 	
 	@GetMapping("/summary-info")
-	public AccountSummaryInfoResponse getSummaryInfo(@RequestHeader HttpHeaders headers) {
+	public AccountResponse getSummaryInfo(@RequestHeader HttpHeaders headers) {
 		String bearerToken = headers.getFirst("Authorization");
 		if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
 			String token = bearerToken.substring(7);
@@ -42,8 +39,37 @@ public class AccountController {
 			String token = bearerToken.substring(7);
 			return accountService.getListAccountByFriendshipStatus(request, token);
 		}
-		return null;
-		
+		return null;		
+	}
+
+	@GetMapping("/receiver-account-friendship")
+	public CustomPageResponse getReceiverFriendship(@ModelAttribute @Valid AccountFriendshipRequest request, @RequestHeader HttpHeaders headers) {
+		String bearerToken = headers.getFirst("Authorization");
+		if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+			String token = bearerToken.substring(7);
+			return accountService.getReceiverByFriendshipStatus(request, token);
+		}
+		return null;		
+	}
+
+	@GetMapping("/sender-account-friendship")
+	public CustomPageResponse getSenderFriendship(@ModelAttribute @Valid AccountFriendshipRequest request, @RequestHeader HttpHeaders headers) {
+		String bearerToken = headers.getFirst("Authorization");
+		if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+			String token = bearerToken.substring(7);
+			return accountService.getSenderByFriendshipStatus(request, token);
+		}
+		return null;		
+	}
+	
+	@GetMapping("/recommend-account-friendship")
+	public CustomPageResponse recommendAccount(@ModelAttribute @Valid RecommendFriendshipRequest request, @RequestHeader HttpHeaders headers) {
+		String bearerToken = headers.getFirst("Authorization");
+		if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+			String token = bearerToken.substring(7);
+			return accountService.recommendFriend(request, token);
+		}
+		return null;		
 	}
 	
 	@GetMapping

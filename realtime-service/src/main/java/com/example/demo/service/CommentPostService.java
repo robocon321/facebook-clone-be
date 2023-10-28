@@ -133,7 +133,7 @@ public class CommentPostService {
 			response.setFile(fileResponse);
 		}
 
-		if (entity.getMentionedAccounts() != null) {
+		if (entity.getMentionedAccounts() != null && entity.getMentionedAccounts().length() > 0) {
 			int[] mentions = Arrays.stream(entity.getMentionedAccounts().split(",")).mapToInt(Integer::parseInt)
 					.toArray();
 			List<AccountResponse> accountResponses = new ArrayList<>();
@@ -149,13 +149,19 @@ public class CommentPostService {
 				accountResponses.add(accountMenResponse);
 			}
 			
-			response.setMentions(accountResponses);
+			response.setMentions(accountResponses);;
 		}
 		
 		if(entity.getEmotions() != null) {
 			List<EmotionCommentResponse> emotionCommentResponses = entity.getEmotions().stream().map(item -> {
 				EmotionCommentResponse emotionCommentResponse = new EmotionCommentResponse();
-				BeanUtils.copyProperties(item, account);	
+				BeanUtils.copyProperties(item, emotionCommentResponse);	
+				
+				AccountEntity accountEmotion = item.getAccount();
+				AccountResponse accountEmotionResponse = new AccountResponse();
+				BeanUtils.copyProperties(accountEmotion, accountEmotionResponse);
+				emotionCommentResponse.setAccount(accountResponse);
+				
 				return emotionCommentResponse;
 			}).toList();
 			
