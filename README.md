@@ -3,6 +3,7 @@
 	<li><a href="#setup-db">Setup DB</a></li>
 	<li><a href="#run-project">Run project</a></li>
 	<li><a href="#db-design">DB Design</a></li>
+	<li><a href="https://github.com/robocon321/facebook-clone-fe">Frontend</a></li>
 </ol>
 
 <h2 id="setup-db">Setup DB</h2>
