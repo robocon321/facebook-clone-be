@@ -92,6 +92,40 @@ pipeline {
             }
         }
         
+        stage('COMMON MODULE CODE ANALYSIS WITH SONARQUBE') {
+          
+            environment {
+                scannerHome = tool "${SONARSCANNER}"
+            }
+
+            steps {
+                script {
+                    withSonarQubeEnv("${SONARSERVER}") {
+                        def scanner = sh(script: '''${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=facebook-clone-CommonModule-be \
+                            -Dsonar.projectName=facebook-clone-CommonModule-repo \
+                            -Dsonar.projectVersion=1.0 \
+                            -Dsonar.sources=common-module/src/ \
+                            -Dsonar.java.binaries=common-module/target/test-classes/com/example/demo/ \
+                            -Dsonar.junit.reportsPath=common-module/target/surefire-reports/ \
+                            -Dsonar.jacoco.reportsPath=common-module/target/jacoco.exec \
+                            -Dsonar.java.checkstyle.reportPaths=common-module/target/checkstyle-result.xml''', returnStatus: true)
+                        
+                        if (scanner != 0) {
+                            error("SonarQube analysis failed")
+                        }
+                    }
+                }
+            }
+            
+            post {
+                failure {
+                    catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                        echo "Stage timed out but continuing..."
+                    }
+                }
+            }
+        }
+
         stage('API GATEWAY CODE ANALYSIS WITH SONARQUBE') {
           
             environment {
@@ -151,6 +185,7 @@ pipeline {
                 }
             }
         }
+
         stage('AUTH SERVICE CODE ANALYSIS WITH SONARQUBE') {
           
             environment {
@@ -320,8 +355,6 @@ pipeline {
                 }
             }
         }
-
-
 
         stage('QUALITY GATE WITH SONARQUBE') {
             steps {
