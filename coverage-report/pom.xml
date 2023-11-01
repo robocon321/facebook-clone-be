@@ -24,6 +24,31 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.robocon321</groupId>
+			<artifactId>realtime-service</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>com.robocon321</groupId>
+			<artifactId>post-service</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>com.robocon321</groupId>
+			<artifactId>location-service</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>com.robocon321</groupId>
+			<artifactId>file-service</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>com.robocon321</groupId>
+			<artifactId>auth-service</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>com.robocon321</groupId>
 			<artifactId>account-service</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>

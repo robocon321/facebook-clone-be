@@ -13,7 +13,7 @@ services:
     image: robocon321/discovery-server:latest
     container_name: discovery-server
     ports:
-      - "8761:8761"
+      - "9091:9091"
     depends_on:
       - zipkin
 
@@ -22,7 +22,7 @@ services:
     image: robocon321/api-gateway:latest
     container_name: api-gateway
     ports:
-      - "9000:9000"
+      - "9090:9090"
     depends_on:
       - zipkin
       - discovery-server
@@ -31,8 +31,58 @@ services:
   account-service:
     container_name: account-service
     image: robocon321/account-service:latest
-    expose:
-      - "9001"
+    ports:
+      - "9001:9001"
+    depends_on:
+      - discovery-server
+      - api-gateway
+
+  ## Auth-Service Docker Compose Config
+  auth-service:
+    container_name: auth-service
+    image: robocon321/auth-service:latest
+    ports:
+      - "9002:9002"
+    depends_on:
+      - discovery-server
+      - api-gateway
+
+  ## File-Service Docker Compose Config
+  file-service:
+    container_name: file-service
+    image: robocon321/file-service:latest
+    ports:
+      - "9003:9003"
+    depends_on:
+      - discovery-server
+      - api-gateway
+
+  ## Location-Service Docker Compose Config
+  file-service:
+    container_name: location-service
+    image: robocon321/location-service:latest
+    ports:
+      - "9004:9004"
+    depends_on:
+      - discovery-server
+      - api-gateway
+
+  ## Post-Service Docker Compose Config
+  post-service:
+    container_name: post-service
+    image: robocon321/post-service:latest
+    ports:
+      - "9005:9005"
+    depends_on:
+      - discovery-server
+      - api-gateway
+
+  ## Realtime-Service Docker Compose Config
+  file-service:
+    container_name: realtime-service
+    image: robocon321/realtime-service:latest
+    ports:
+      - "9006:9006"
     depends_on:
       - discovery-server
       - api-gateway
@@ -43,13 +93,18 @@ services:
     container_name: prometheus
     restart: always
     ports:
-      - "9090:9090"
+      - "9900:9090"
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
     depends_on:
       - discovery-server
       - api-gateway
       - account-service
+      - auth-service
+      - file-service
+      - location-service
+      - post-service
+      - realtime-service
       
   # Grafana
   grafana:

@@ -150,7 +150,32 @@ pipeline {
                     }
                 }
             }
-            
+
+        stage('AUTH SERVICE CODE ANALYSIS WITH SONARQUBE') {
+          
+            environment {
+                scannerHome = tool "${SONARSCANNER}"
+            }
+
+            steps {
+                script {
+                    withSonarQubeEnv("${SONARSERVER}") {
+                        def scanner = sh(script: '''${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=facebook-clone-AuthService-be \
+                            -Dsonar.projectName=facebook-clone-AuthService-repo \
+                            -Dsonar.projectVersion=1.0 \
+                            -Dsonar.sources=auth-service/src/ \
+                            -Dsonar.java.binaries=auth-service/target/test-classes/com/example/demo/ \
+                            -Dsonar.junit.reportsPath=auth-service/target/surefire-reports/ \
+                            -Dsonar.jacoco.reportsPath=auth-service/target/jacoco.exec \
+                            -Dsonar.java.checkstyle.reportPaths=auth-service/target/checkstyle-result.xml''', returnStatus: true)
+                        
+                        if (scanner != 0) {
+                            error("SonarQube analysis failed")
+                        }
+                    }
+                }
+            }
+
             post {
                 failure {
                     catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
@@ -159,7 +184,145 @@ pipeline {
                 }
             }
         }
-        
+
+        stage('FILE SERVICE CODE ANALYSIS WITH SONARQUBE') {
+          
+            environment {
+                scannerHome = tool "${SONARSCANNER}"
+            }
+
+            steps {
+                script {
+                    withSonarQubeEnv("${SONARSERVER}") {
+                        def scanner = sh(script: '''${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=facebook-clone-FileService-be \
+                            -Dsonar.projectName=facebook-clone-FileService-repo \
+                            -Dsonar.projectVersion=1.0 \
+                            -Dsonar.sources=file-service/src/ \
+                            -Dsonar.java.binaries=file-service/target/test-classes/com/example/demo/ \
+                            -Dsonar.junit.reportsPath=file-service/target/surefire-reports/ \
+                            -Dsonar.jacoco.reportsPath=file-service/target/jacoco.exec \
+                            -Dsonar.java.checkstyle.reportPaths=file-service/target/checkstyle-result.xml''', returnStatus: true)
+                        
+                        if (scanner != 0) {
+                            error("SonarQube analysis failed")
+                        }
+                    }
+                }
+            }
+
+            post {
+                failure {
+                    catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                        echo "Stage timed out but continuing..."
+                    }
+                }
+            }
+        }
+
+        stage('LOCATION SERVICE CODE ANALYSIS WITH SONARQUBE') {
+          
+            environment {
+                scannerHome = tool "${SONARSCANNER}"
+            }
+
+            steps {
+                script {
+                    withSonarQubeEnv("${SONARSERVER}") {
+                        def scanner = sh(script: '''${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=facebook-clone-LocationService-be \
+                            -Dsonar.projectName=facebook-clone-LocationService-repo \
+                            -Dsonar.projectVersion=1.0 \
+                            -Dsonar.sources=location-service/src/ \
+                            -Dsonar.java.binaries=location-service/target/test-classes/com/example/demo/ \
+                            -Dsonar.junit.reportsPath=location-service/target/surefire-reports/ \
+                            -Dsonar.jacoco.reportsPath=location-service/target/jacoco.exec \
+                            -Dsonar.java.checkstyle.reportPaths=location-service/target/checkstyle-result.xml''', returnStatus: true)
+                        
+                        if (scanner != 0) {
+                            error("SonarQube analysis failed")
+                        }
+                    }
+                }
+            }
+
+            post {
+                failure {
+                    catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                        echo "Stage timed out but continuing..."
+                    }
+                }
+            }
+        }
+
+        stage('POST SERVICE CODE ANALYSIS WITH SONARQUBE') {
+          
+            environment {
+                scannerHome = tool "${SONARSCANNER}"
+            }
+
+            steps {
+                script {
+                    withSonarQubeEnv("${SONARSERVER}") {
+                        def scanner = sh(script: '''${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=facebook-clone-PostService-be \
+                            -Dsonar.projectName=facebook-clone-PostService-repo \
+                            -Dsonar.projectVersion=1.0 \
+                            -Dsonar.sources=post-service/src/ \
+                            -Dsonar.java.binaries=post-service/target/test-classes/com/example/demo/ \
+                            -Dsonar.junit.reportsPath=post-service/target/surefire-reports/ \
+                            -Dsonar.jacoco.reportsPath=post-service/target/jacoco.exec \
+                            -Dsonar.java.checkstyle.reportPaths=post-service/target/checkstyle-result.xml''', returnStatus: true)
+                        
+                        if (scanner != 0) {
+                            error("SonarQube analysis failed")
+                        }
+                    }
+                }
+            }
+
+            post {
+                failure {
+                    catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                        echo "Stage timed out but continuing..."
+                    }
+                }
+            }
+        }
+
+        stage('REALTIME SERVICE CODE ANALYSIS WITH SONARQUBE') {
+          
+            environment {
+                scannerHome = tool "${SONARSCANNER}"
+            }
+
+            steps {
+                script {
+                    withSonarQubeEnv("${SONARSERVER}") {
+                        def scanner = sh(script: '''${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=facebook-clone-RealtimeService-be \
+                            -Dsonar.projectName=facebook-clone-RealtimeService-repo \
+                            -Dsonar.projectVersion=1.0 \
+                            -Dsonar.sources=realtime-service/src/ \
+                            -Dsonar.java.binaries=realtime-service/target/test-classes/com/example/demo/ \
+                            -Dsonar.junit.reportsPath=realtime-service/target/surefire-reports/ \
+                            -Dsonar.jacoco.reportsPath=realtime-service/target/jacoco.exec \
+                            -Dsonar.java.checkstyle.reportPaths=realtime-service/target/checkstyle-result.xml''', returnStatus: true)
+                        
+                        if (scanner != 0) {
+                            error("SonarQube analysis failed")
+                        }
+                    }
+                }
+            }
+
+            post {
+                failure {
+                    catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                        echo "Stage timed out but continuing..."
+                    }
+                }
+            }
+        }
+
+
+
         stage('QUALITY GATE WITH SONARQUBE') {
             steps {
                 script {
@@ -215,6 +378,31 @@ pipeline {
                     [artifactId: 'discovery-server',
                      classifier: '',
                      file: 'discovery-server/target/discovery-server-0.0.1-SNAPSHOT.jar',
+                     type: 'jar'],
+
+                    [artifactId: 'auth-service',
+                     classifier: '',
+                     file: 'auth-service/target/auth-service-0.0.1-SNAPSHOT.jar',
+                     type: 'jar'],
+
+                    [artifactId: 'file-service',
+                     classifier: '',
+                     file: 'file-service/target/file-service-0.0.1-SNAPSHOT.jar',
+                     type: 'jar'],
+
+                    [artifactId: 'location-service',
+                     classifier: '',
+                     file: 'location-service/target/location-service-0.0.1-SNAPSHOT.jar',
+                     type: 'jar'],
+
+                    [artifactId: 'post-service',
+                     classifier: '',
+                     file: 'post-service/target/post-service-0.0.1-SNAPSHOT.jar',
+                     type: 'jar'],
+
+                    [artifactId: 'realtime-service',
+                     classifier: '',
+                     file: 'realtime-service/target/realtime-service-0.0.1-SNAPSHOT.jar',
                      type: 'jar'],
                   ]
                 )

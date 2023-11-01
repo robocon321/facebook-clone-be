@@ -18,14 +18,14 @@ scrape_configs:
   - job_name: 'discovery-server'
     metrics_path: '/actuator/prometheus'
     static_configs:
-      - targets: ['discovery-server:8761']
+      - targets: ['discovery-server:9091']
         labels:
           application: 'Discovery Server Application'
 
   - job_name: 'api-gateway'
     metrics_path: '/actuator/prometheus'
     static_configs:
-      - targets: ['api-gateway:9000']
+      - targets: ['api-gateway:9090']
         labels:
           application: 'Api Gateway Application'
 
@@ -35,3 +35,39 @@ scrape_configs:
       - targets: ['account-service:9001']
         labels:
           application: 'Account Service Application'
+          
+  - job_name: 'auth-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['auth-service:9002']
+        labels:
+          application: 'Auth Service Application'
+
+  - job_name: 'file-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['file-service:9003']
+        labels:
+          application: 'File Service Application'
+
+  - job_name: 'location-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['location-service:9004']
+        labels:
+          application: 'Location Service Application'
+
+  - job_name: 'post-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['post-service:9005']
+        labels:
+          application: 'Post Service Application'
+          
+  - job_name: 'realtime-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['realtime-service:9006']
+        labels:
+          application: 'Realtime Service Application'
+          
