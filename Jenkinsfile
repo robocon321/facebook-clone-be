@@ -150,7 +150,7 @@ pipeline {
                     }
                 }
             }
-
+        }
         stage('AUTH SERVICE CODE ANALYSIS WITH SONARQUBE') {
           
             environment {
