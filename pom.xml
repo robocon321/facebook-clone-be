@@ -21,6 +21,8 @@
 		<module>coverage-report</module>
 		<module>file-service</module>
 		<module>location-service</module>
+		<module>post-service</module>
+		<module>realtime-service</module>
 	</modules>
 	<dependencies>
 		<dependency>
