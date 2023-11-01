@@ -15,6 +15,7 @@
 	</parent>
 	<modules>
 		<module>discovery-server</module>
+		<module>common-module</module>
 		<module>account-service</module>
 		<module>auth-service</module>
 		<module>coverage-report</module>
