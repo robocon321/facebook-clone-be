@@ -4,6 +4,9 @@
 	<li><a href="#run-project">Run project</a></li>
 	<li><a href="#db-design">DB Design</a></li>
 	<li><a href="https://github.com/robocon321/facebook-clone-fe">Frontend</a></li>
+	<li><a href="#jenkins-be">Jenkins</a></li>
+	<li><a href="#sonarqube-be">Sonarqube</a></li>
+	<li><a href="#nexus-be">Nexus</a></li>	
 </ol>
 
 <h2 id="setup-db">Setup DB</h2>
@@ -34,4 +37,19 @@
 <h3>Result: </h3>
 <div>
 	<img src="documents/image/db-design.png" alt="Not found" />
+</div>
+
+<h2 id="jenkins-be">Jenkins</h2>
+<div>
+	<img src="documents/image/jenkins.png" alt="Not found" />
+</div>
+
+<h2 id="sonarqube-be">Sonarqube</h2>
+<div>
+	<img src="documents/image/sonarqube.png" alt="Not found" />
+</div>
+
+<h2 id="nexus-be">Nexus</h2>
+<div>
+	<img src="documents/image/nexus.png" alt="Not found" />
 </div>
