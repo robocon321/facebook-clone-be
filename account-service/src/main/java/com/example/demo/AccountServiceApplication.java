@@ -9,7 +9,7 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 public class AccountServiceApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(CommonModuleApplication.class, args);
+		SpringApplication.run(AccountServiceApplication.class, args);
 	}
 
 }
