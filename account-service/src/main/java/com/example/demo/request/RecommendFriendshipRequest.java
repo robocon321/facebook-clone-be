@@ -9,9 +9,9 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-public class RecommendFriendshipRequest extends CustomPageRequest {	
+public class RecommendFriendshipRequest extends CustomPageRequest {
 	@NotNull
 	private String search = "";
-	
+
 	private List<Integer> excludeIds = new ArrayList<>();
 }

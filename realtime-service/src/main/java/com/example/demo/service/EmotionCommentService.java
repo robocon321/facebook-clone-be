@@ -11,13 +11,11 @@ import org.springframework.stereotype.Service;
 import com.example.demo.entity.AccountEntity;
 import com.example.demo.entity.CommentPostEntity;
 import com.example.demo.entity.EmotionCommentEntity;
-import com.example.demo.entity.PostEntity;
 import com.example.demo.exception.BlockException;
 import com.example.demo.exception.NotFoundException;
 import com.example.demo.repository.AccountRepository;
 import com.example.demo.repository.CommentPostRepository;
 import com.example.demo.repository.EmotionCommentRepository;
-import com.example.demo.repository.PostRepository;
 import com.example.demo.response.AccountResponse;
 import com.example.demo.response.EmotionCommentResponse;
 import com.example.demo.type.DeleteStatusType;
@@ -35,13 +33,14 @@ public class EmotionCommentService {
 
 	@Autowired
 	private AccountRepository accountRepository;
-	
+
 	@Transactional
 	public EmotionCommentResponse saveEmotionComment(EmotionType type, Integer accountId, Integer commentId) {
 		Timestamp now = new Timestamp(System.currentTimeMillis());
-		
-		Optional<EmotionCommentEntity> preMotionOpt = emotionCommentRepository.findByAccountAccountIdAndCommentCommentId(accountId, commentId);
-		
+
+		Optional<EmotionCommentEntity> preMotionOpt = emotionCommentRepository
+				.findByAccountAccountIdAndCommentCommentId(accountId, commentId);
+
 		Optional<CommentPostEntity> commentOpt = commentRepository.findById(commentId);
 		if (commentOpt.isEmpty())
 			throw new NotFoundException("CommentID: " + commentId + " is not found");
@@ -56,19 +55,18 @@ public class EmotionCommentService {
 
 		EmotionCommentEntity emotion = null;
 
-		if(preMotionOpt.isPresent()) {			
+		if (preMotionOpt.isPresent()) {
 			emotion = preMotionOpt.get();
 			emotion.setType(type);
-			emotion.setTypeValue(type.getEmotion());		
-		}
-		else {			
+			emotion.setTypeValue(type.getEmotion());
+		} else {
 			emotion = EmotionCommentEntity.builder()
 					.createTime(now)
 					.modTime(now)
 					.status(DeleteStatusType.ACTIVE)
 					.type(type)
 					.comment(comment)
-					.account(account).build();			
+					.account(account).build();
 		}
 
 		EmotionCommentEntity newEmotion = emotionCommentRepository.save(emotion);
@@ -95,7 +93,7 @@ public class EmotionCommentService {
 		}).toList();
 		return responses;
 	}
-	
+
 	public void deleteEmotion(Integer accountId, Integer commentId) {
 		emotionCommentRepository.deleteAllByAccountAccountIdAndCommentCommentId(accountId, commentId);
 	}

@@ -14,8 +14,9 @@
 		<relativePath />
 	</parent>
 	<modules>
-		<module>discovery-server</module>
 		<module>common-module</module>
+		<module>discovery-server</module>
+		<module>api-gateway</module>
 		<module>account-service</module>
 		<module>auth-service</module>
 		<module>coverage-report</module>
@@ -23,46 +24,7 @@
 		<module>location-service</module>
 		<module>post-service</module>
 		<module>realtime-service</module>
-		<module>api-gateway</module>
 	</modules>
-	<dependencies>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-actuator</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>io.micrometer</groupId>
-			<artifactId>micrometer-tracing-bridge-brave</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>io.zipkin.reporter2</groupId>
-			<artifactId>zipkin-reporter-brave</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>io.micrometer</groupId>
-			<artifactId>micrometer-registry-prometheus</artifactId>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-			<optional>true</optional>
-		</dependency>
-	</dependencies>
 	<build>
 		<plugins>
 			<plugin>
@@ -94,12 +56,22 @@
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+				<groupId>com.google.cloud.tools</groupId>
+				<artifactId>jib-maven-plugin</artifactId>
+				<version>3.4.1</version>
+				<configuration>
+					<to>
+						<image>robocon321/facebook-clone/${project.artifactId}</image>
+					</to>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
-	<repositories>
+	<!-- <repositories>
 		<repository>
 			<id>${NEXUS_GRP_REPO}</id>
 			<url>http://${NEXUSIP}:${NEXUSPORT}/repository/${NEXUS_GRP_REPO}/</url>
 		</repository>
-	</repositories>
+	</repositories> -->
 </project>

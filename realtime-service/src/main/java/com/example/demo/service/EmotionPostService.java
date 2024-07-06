@@ -33,13 +33,14 @@ public class EmotionPostService {
 
 	@Autowired
 	private AccountRepository accountRepository;
-	
+
 	@Transactional
 	public EmotionPostResponse saveEmotionPost(EmotionType type, Integer accountId, Integer postId) {
 		Timestamp now = new Timestamp(System.currentTimeMillis());
-		
-		Optional<EmotionPostEntity> preMotionOpt = emotionPostRepository.findByAccountAccountIdAndPostPostId(accountId, postId);
-		
+
+		Optional<EmotionPostEntity> preMotionOpt = emotionPostRepository.findByAccountAccountIdAndPostPostId(accountId,
+				postId);
+
 		Optional<PostEntity> postOpt = postRepository.findById(postId);
 		if (postOpt.isEmpty())
 			throw new NotFoundException("PostID: " + postId + " is not found");
@@ -54,14 +55,14 @@ public class EmotionPostService {
 
 		EmotionPostEntity emotion = null;
 
-		if(preMotionOpt.isPresent()) {			
+		if (preMotionOpt.isPresent()) {
 			emotion = preMotionOpt.get();
 			emotion.setType(type);
-			emotion.setTypeValue(type.getEmotion());		
-		}
-		else {			
-			emotion = EmotionPostEntity.builder().createTime(now).modTime(now).status(DeleteStatusType.ACTIVE).type(type).post(post)
-					.account(account).build();			
+			emotion.setTypeValue(type.getEmotion());
+		} else {
+			emotion = EmotionPostEntity.builder().createTime(now).modTime(now).status(DeleteStatusType.ACTIVE)
+					.type(type).post(post)
+					.account(account).build();
 		}
 
 		EmotionPostEntity newEmotion = emotionPostRepository.save(emotion);
@@ -88,7 +89,7 @@ public class EmotionPostService {
 		}).toList();
 		return responses;
 	}
-	
+
 	public void deleteEmotion(Integer accountId, Integer postId) {
 		emotionPostRepository.deleteAllByAccountAccountIdAndPostPostId(accountId, postId);
 	}

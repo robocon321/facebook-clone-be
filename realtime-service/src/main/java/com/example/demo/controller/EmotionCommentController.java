@@ -25,42 +25,44 @@ import com.example.demo.type.EmotionType;
 
 @Controller
 public class EmotionCommentController {
-    private final ConcurrentHashMap<Integer, Map<String, Integer>> userSessions = new ConcurrentHashMap<>();
-    
-    @Autowired
-    private EmotionCommentService emotionCommentService;
-    
+	private final ConcurrentHashMap<Integer, Map<String, Integer>> userSessions = new ConcurrentHashMap<>();
+
+	@Autowired
+	private EmotionCommentService emotionCommentService;
+
 	@Autowired
 	private JwtProvider jwtProvider;
 
-    @Autowired
-    private SimpMessagingTemplate simpMessagingTemplate;
-        
-    @MessageMapping("/emotion-comment/create/{postId}")
-    public void createEmotionComment(@Payload EmotionCommentRequest request, @DestinationVariable Integer postId, SimpMessageHeaderAccessor headerAccessor) throws Exception {    	
-    	EmotionType emotionType = EmotionType.valueOf(request.getType());
-		Integer accountId = userSessions.get(postId).get(headerAccessor.getSessionId());		
+	@Autowired
+	private SimpMessagingTemplate simpMessagingTemplate;
+
+	@MessageMapping("/emotion-comment/create/{postId}")
+	public void createEmotionComment(@Payload EmotionCommentRequest request, @DestinationVariable Integer postId,
+			SimpMessageHeaderAccessor headerAccessor) throws Exception {
+		EmotionType emotionType = EmotionType.valueOf(request.getType());
+		Integer accountId = userSessions.get(postId).get(headerAccessor.getSessionId());
 		emotionCommentService.saveEmotionComment(emotionType, accountId, request.getCommentId());
 
 		List<EmotionCommentResponse> emotions = emotionCommentService.getListEmotionByCommentId(request.getCommentId());
-    	Map<String, Object> response = new HashMap<>();
-    	response.put("commentId", request.getCommentId());
-    	response.put("data", emotions);
+		Map<String, Object> response = new HashMap<>();
+		response.put("commentId", request.getCommentId());
+		response.put("data", emotions);
 
-    	this.simpMessagingTemplate.convertAndSend("/topic/emotion-comment/"+postId, response);
-    }
-    
-    @MessageMapping("/emotion-comment/delete/{postId}")
-    public void deleteEmotionCommment(@Payload String commentIdStr, @DestinationVariable Integer postId, SimpMessageHeaderAccessor headerAccessor) throws Exception {
-    	Integer commentId = Integer.parseInt(commentIdStr);
-    	Integer accountId = userSessions.get(postId).get(headerAccessor.getSessionId());
+		this.simpMessagingTemplate.convertAndSend("/topic/emotion-comment/" + postId, response);
+	}
+
+	@MessageMapping("/emotion-comment/delete/{postId}")
+	public void deleteEmotionCommment(@Payload String commentIdStr, @DestinationVariable Integer postId,
+			SimpMessageHeaderAccessor headerAccessor) throws Exception {
+		Integer commentId = Integer.parseInt(commentIdStr);
+		Integer accountId = userSessions.get(postId).get(headerAccessor.getSessionId());
 		emotionCommentService.deleteEmotion(accountId, commentId);
-    	List<EmotionCommentResponse> emotions = emotionCommentService.getListEmotionByCommentId(commentId);
-    	Map<String, Object> response = new HashMap<>();
-    	response.put("commentId", commentId);
-    	response.put("data", emotions);
-    	this.simpMessagingTemplate.convertAndSend("/topic/emotion-comment/"+postId, response);
-    }
+		List<EmotionCommentResponse> emotions = emotionCommentService.getListEmotionByCommentId(commentId);
+		Map<String, Object> response = new HashMap<>();
+		response.put("commentId", commentId);
+		response.put("data", emotions);
+		this.simpMessagingTemplate.convertAndSend("/topic/emotion-comment/" + postId, response);
+	}
 
 	@EventListener
 	public void handleWebSocketUnSubcribe(SessionUnsubscribeEvent event) {

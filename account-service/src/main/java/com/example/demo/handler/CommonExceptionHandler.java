@@ -14,7 +14,7 @@ import com.example.demo.exception.NotFoundException;
 
 @ControllerAdvice
 public class CommonExceptionHandler {
-	
+
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<Object> handleNotFoundException(NotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
@@ -30,13 +30,13 @@ public class CommonExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
     }
 
-	@ExceptionHandler(BindException.class)
-	public ResponseEntity<Object> handleArgumentNotValidException(BindException ex, WebRequest request) {
-		String message = "";
-		for (FieldError error : ex.getFieldErrors()) {
-			message += error.getDefaultMessage() + ". \n";
-		}
+    @ExceptionHandler(BindException.class)
+    public ResponseEntity<Object> handleArgumentNotValidException(BindException ex, WebRequest request) {
+        String message = "";
+        for (FieldError error : ex.getFieldErrors()) {
+            message += error.getDefaultMessage() + ". \n";
+        }
 
-		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(message);
-	}
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(message);
+    }
 }

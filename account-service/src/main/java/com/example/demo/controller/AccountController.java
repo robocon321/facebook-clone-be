@@ -16,7 +16,6 @@ import com.example.demo.request.RecommendFriendshipRequest;
 import com.example.demo.response.AccountResponse;
 import com.example.demo.response.ActionHistoryResponse;
 import com.example.demo.response.CustomPageResponse;
-import com.example.demo.response.HistoryAccountResponse;
 import com.example.demo.service.AccountService;
 import com.example.demo.type.ActionHistoryStatusType;
 

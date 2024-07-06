@@ -32,7 +32,7 @@ public class FriendshipService {
 			throw new BlockException("Receiver is similar to sender");
 
 		// Check status account
-		
+
 		Optional<AccountEntity> receiverOpt = accountRepository.findById(receiverId);
 		if (receiverOpt.isEmpty()) {
 			throw new NotFoundException("Not found account " + receiverId);
@@ -56,84 +56,85 @@ public class FriendshipService {
 		if (receiver.getStatus() == DeleteStatusType.INACTIVE) {
 			throw new BlockException("Your account " + senderId + " has been lock");
 		}
-		
 
 		Optional<FriendshipEntity> friendshipOpt = friendshipRepository.customFindByReceiverIdAndSenderId(receiverId,
 				senderId);
 		FriendshipEntity previousFriendship = null;
 		FriendshipEntity newFriendship = null;
 		switch (status) {
-		case PENDING:
-			// Not have friendship
-			if (friendshipOpt.isEmpty()) {
-				newFriendship = saveFriendship(receiver, sender, status);
+			case PENDING:
+				// Not have friendship
+				if (friendshipOpt.isEmpty()) {
+					newFriendship = saveFriendship(receiver, sender, status);
+					break;
+				}
+
+				previousFriendship = friendshipOpt.get();
+				AccountEntity previousReceiver = previousFriendship.getReceiver();
+				AccountEntity previousSender = previousFriendship.getSender();
+
+				// Exist block from receiver
+				if (previousFriendship.getStatus() == FriendshipStatusType.BLOCK) {
+					if (previousReceiver.getAccountId().equals(senderId))
+						throw new BlockException("Acccount " + receiverId + " was blocked you");
+					else
+						newFriendship = updateFriendship(previousFriendship, receiver, sender, status);
+				}
+
+				// Exist friendship before and waiting for accept or reject
+				else if (previousFriendship.getStatus() == FriendshipStatusType.PENDING) {
+					if (previousReceiver.getAccountId().equals(senderId))
+						throw new ConflictException(
+								"Account " + receiverId + " has sent pending request friendship before");
+					if (previousSender.getAccountId().equals(senderId))
+						throw new ConflictException("Your account has sent pending request friendship before");
+				}
+
+				// Pending from receiver
+				else if (previousFriendship.getStatus() == FriendshipStatusType.REJECTED
+						|| previousFriendship.getStatus() == FriendshipStatusType.CANCEL)
+					newFriendship = updateFriendship(previousFriendship, receiver, sender, status);
+
+				// PENDING status ACCEPTED
+				else
+					throw new ConflictException("Your account has accept request friendship before");
 				break;
-			}
+			case REJECTED, ACCEPTED:
+				if (friendshipOpt.isEmpty())
+					throw new NotFoundException("Not found friendship with account " + receiverId);
 
-			previousFriendship = friendshipOpt.get();
-			AccountEntity previousReceiver = previousFriendship.getReceiver();
-			AccountEntity previousSender = previousFriendship.getSender();
+				previousFriendship = friendshipOpt.get();
+				if (previousFriendship.getStatus() == FriendshipStatusType.PENDING) {
+					if (previousFriendship.getSender().getAccountId().equals(senderId))
+						throw new BlockException("You dont have permission " + status);
+					else
+						newFriendship = updateFriendship(previousFriendship, receiver, sender, status);
+				} else
+					throw new BlockException("Only status PENDING can " + status);
+				break;
+			case CANCEL:
+				if (friendshipOpt.isEmpty())
+					throw new NotFoundException("Not found friendship with account " + receiverId);
 
-			// Exist block from receiver
-			if (previousFriendship.getStatus() == FriendshipStatusType.BLOCK) {
-				if (previousReceiver.getAccountId().equals(senderId))
-					throw new BlockException("Acccount " + receiverId + " was blocked you");
-				else
+				previousFriendship = friendshipOpt.get();
+				if (previousFriendship.getStatus() == FriendshipStatusType.ACCEPTED
+						|| previousFriendship.getStatus() == FriendshipStatusType.PENDING
+						|| previousFriendship.getStatus() == FriendshipStatusType.BLOCK) {
 					newFriendship = updateFriendship(previousFriendship, receiver, sender, status);
-			}
+				} else
+					throw new BlockException("Only status ACCEPTED can " + status);
 
-			// Exist friendship before and waiting for accept or reject
-			else if (previousFriendship.getStatus() == FriendshipStatusType.PENDING) {
-				if (previousReceiver.getAccountId().equals(senderId))
-					throw new ConflictException("Account " + receiverId + " has sent pending request friendship before");
-				if (previousSender.getAccountId().equals(senderId))
-					throw new ConflictException("Your account has sent pending request friendship before");
-			}
-
-			// Pending from receiver
-			else if (previousFriendship.getStatus() == FriendshipStatusType.REJECTED
-					|| previousFriendship.getStatus() == FriendshipStatusType.CANCEL)
-				newFriendship = updateFriendship(previousFriendship, receiver, sender, status);
-
-			// PENDING status ACCEPTED
-			else throw new ConflictException("Your account has accept request friendship before");
-			break;
-		case REJECTED, ACCEPTED:
-			if (friendshipOpt.isEmpty())
-				throw new NotFoundException("Not found friendship with account " + receiverId);
-
-			previousFriendship = friendshipOpt.get();
-			if (previousFriendship.getStatus() == FriendshipStatusType.PENDING) {
-				if (previousFriendship.getSender().getAccountId().equals(senderId))
-					throw new BlockException("You dont have permission " + status);
-				else
+				break;
+			case BLOCK:
+				if (friendshipOpt.isEmpty())
+					newFriendship = saveFriendship(receiver, sender, status);
+				else {
+					previousFriendship = friendshipOpt.get();
 					newFriendship = updateFriendship(previousFriendship, receiver, sender, status);
-			} else
-				throw new BlockException("Only status PENDING can " + status);
-			break;
-		case CANCEL:
-			if (friendshipOpt.isEmpty())
-				throw new NotFoundException("Not found friendship with account " + receiverId);
-
-			previousFriendship = friendshipOpt.get();
-			if (previousFriendship.getStatus() == FriendshipStatusType.ACCEPTED
-					|| previousFriendship.getStatus() == FriendshipStatusType.PENDING
-					|| previousFriendship.getStatus() == FriendshipStatusType.BLOCK) {
-				newFriendship = updateFriendship(previousFriendship, receiver, sender, status);
-			} else
-				throw new BlockException("Only status ACCEPTED can " + status);
-
-			break;
-		case BLOCK:
-			if (friendshipOpt.isEmpty())
-				newFriendship = saveFriendship(receiver, sender, status);
-			else {
-				previousFriendship = friendshipOpt.get();				
-				newFriendship = updateFriendship(previousFriendship, receiver, sender, status);
-			}
-			break;
-		default:
-			break;
+				}
+				break;
+			default:
+				break;
 		}
 		FriendshipResponse response = mappingFriendshipEntityToDTO(newFriendship);
 		return response;
@@ -158,14 +159,16 @@ public class FriendshipService {
 
 	private FriendshipEntity saveFriendship(AccountEntity receiver, AccountEntity sender, FriendshipStatusType status) {
 		Timestamp now = new Timestamp(System.currentTimeMillis());
-		FriendshipEntity friendShip = FriendshipEntity.builder().receiver(receiver).sender(sender).requestTime(now).status(status)
+		FriendshipEntity friendShip = FriendshipEntity.builder().receiver(receiver).sender(sender).requestTime(now)
+				.status(status)
 				.build();
 		FriendshipEntity newFriendship = friendshipRepository.save(friendShip);
 
 		return newFriendship;
 	}
-	
-	private FriendshipEntity updateFriendship(FriendshipEntity previousFriendship, AccountEntity receiver, AccountEntity sender, FriendshipStatusType status) {
+
+	private FriendshipEntity updateFriendship(FriendshipEntity previousFriendship, AccountEntity receiver,
+			AccountEntity sender, FriendshipStatusType status) {
 		Timestamp now = new Timestamp(System.currentTimeMillis());
 		previousFriendship.setReceiver(receiver);
 		previousFriendship.setSender(sender);

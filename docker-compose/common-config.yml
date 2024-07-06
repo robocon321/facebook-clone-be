@@ -1,0 +1,11 @@
+services:
+ network-deploy-service:
+  env_file:
+  - .env
+  networks:
+  - robocon321
+ 
+ microservice-base-config:
+  extends:
+   service: network-deploy-service   
+

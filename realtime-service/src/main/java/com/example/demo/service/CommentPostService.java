@@ -148,26 +148,27 @@ public class CommentPostService {
 				BeanUtils.copyProperties(accountMention, accountMenResponse);
 				accountResponses.add(accountMenResponse);
 			}
-			
-			response.setMentions(accountResponses);;
+
+			response.setMentions(accountResponses);
+			;
 		}
-		
-		if(entity.getEmotions() != null) {
+
+		if (entity.getEmotions() != null) {
 			List<EmotionCommentResponse> emotionCommentResponses = entity.getEmotions().stream().map(item -> {
 				EmotionCommentResponse emotionCommentResponse = new EmotionCommentResponse();
-				BeanUtils.copyProperties(item, emotionCommentResponse);	
-				
+				BeanUtils.copyProperties(item, emotionCommentResponse);
+
 				AccountEntity accountEmotion = item.getAccount();
 				AccountResponse accountEmotionResponse = new AccountResponse();
 				BeanUtils.copyProperties(accountEmotion, accountEmotionResponse);
 				emotionCommentResponse.setAccount(accountResponse);
-				
+
 				return emotionCommentResponse;
 			}).toList();
-			
-			response.setEmotions(emotionCommentResponses);	
+
+			response.setEmotions(emotionCommentResponses);
 		}
-		
+
 		return response;
 	}
 

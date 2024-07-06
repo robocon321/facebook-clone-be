@@ -11,18 +11,14 @@
 
 <h2 id="setup-db">Setup DB</h2>
 <ul>
-<li>Step 1: Open SQL server</li>
-<li>Step 2: Backup data from "documents/database/facebook_db.bak" in project folder</li>
 </ul>
 
 <h2 id="run-project">Run project</h2>
 <ul>
-<li>Step 1: Import maven project (account-service, api-gateway, auth-service, common-module, discovery-server, file-service, location-service, post-service, realtime-service)</li>
-<li>Step 2: Run all service</li>
-<li>Step 3: Access to <a href="http://localhost:9091/">localhost:9091</a> to check status services</li>
+<li>Run command: <code>sudo docker compose --env-file ../.env up -d<code></li>
 </ul>
 <div>
-	<h3>Result maybe: </h3>
+	<h3>Result: </h3>
 	<div>
 		<img src="documents/image/eclipse-console.png" alt="Not found" />		
 	</div>
@@ -30,7 +26,6 @@
 		<img src="documents/image/9091.png" alt="Not found" />
  	</div>
 </div>
-
 
 <h2 id="db-design">DB design</h2>
 <p>Access to <a href="https://dbdiagram.io/">dbdiagram.io</a> and copy table code in "documents/database/DB.txt" in project folder</p>

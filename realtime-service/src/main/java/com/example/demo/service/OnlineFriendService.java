@@ -1,6 +1,5 @@
 package com.example.demo.service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,14 +17,15 @@ import com.example.demo.repository.AccountRepository;
 public class OnlineFriendService {
 	@Autowired
 	private AccountRepository accountRepository;
-	
+
 	public List<Integer> getAllFriends(Integer accountId) {
 		Optional<AccountEntity> accountOpt = accountRepository.findById(accountId);
 		if (accountOpt.isEmpty())
 			throw new NotFoundException("Your account does not exists");
 		Pageable pageable = PageRequest.of(0, 1000);
-		
-		Page<AccountEntity> pageEntity = accountRepository.findByCurrentIdAndFriendshipStatus(accountId, 'A', "", pageable);
+
+		Page<AccountEntity> pageEntity = accountRepository.findByCurrentIdAndFriendshipStatus(accountId, 'A', "",
+				pageable);
 		List<Integer> friendIds = pageEntity.getContent().stream().map(item -> item.getAccountId()).toList();
 		return friendIds;
 	}
