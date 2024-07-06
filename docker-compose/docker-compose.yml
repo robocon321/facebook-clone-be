@@ -40,261 +40,27 @@ services:
     environment:
       SERVER_NAME: "zipkin-server"
 
-  ## Eureka Server
-  discovery-server:
-    image: robocon321/discovery-server:latest
-    container_name: discovery-server
+  facebook-clone-be:
+    container_name: facebook-clone-be
+    image: robocon321/facebook-clone-be:latest
     ports:
+      - "9090:9090"
       - "9091:9091"
     depends_on:
       zipkin:
         condition: service_healthy
-    healthcheck:
-      test: "curl --fail --silent http://localhost:9091/actuator/health | grep UP || exit 1"
-      interval: 20s
-      timeout: 5s
-      retries: 3
-      start_interval: 10s
-    extends:
-      file: common-config.yml
-      service: microservice-base-config
-    environment:
-      SERVER_NAME: "discovery-server"
-      DISCOVERYSERVER_HOST: ${DISCOVERYSERVER_HOST}
-      ZIPKIN_HOST: ${ZIPKIN_HOST}
-
-  ## Api Gateway
-  api-gateway:
-    image: robocon321/api-gateway:latest
-    container_name: api-gateway
-    ports:
-      - "9090:9090"
-    depends_on:
-      zipkin:
-        condition: service_healthy
-      discovery-server:
+      mysql-db:
         condition: service_healthy
     healthcheck:
       test: "curl --fail --silent http://localhost:9090/actuator/health | grep UP || exit 1"
-      interval: 20s
-      timeout: 5s
+      interval: 2m
+      timeout: 2m
       retries: 3
-      start_interval: 10s
+      start_interval: 2m
     extends:
       file: common-config.yml
       service: microservice-base-config
     environment:
-      SERVER_NAME: "api-gateway"
-      DB_PROTOCOL: ${DB_PROTOCOL}
-      DB_HOST: ${DB_HOST}
-      DB_PORT: ${DB_PORT}
-      DB_DATABASE: ${DB_DATABASE}
-      DB_USER: ${DB_USER}
-      DB_PASSWORD: ${DB_PASSWORD}
-      DB_DRIVER: ${DB_DRIVER}
-      DB_HIBERNATE_DIALECT: ${DB_HIBERNATE_DIALECT}
-      JWT_SECRET: ${JWT_SECRET}
-      JWT_EXPIRE: ${JWT_EXPIRE}
-      SPRING_SECURITY_USERNAME: ${SPRING_SECURITY_USERNAME}
-      SPRING_SECURITY_PASSWORD: ${SPRING_SECURITY_PASSWORD}
-      ZIPKIN_HOST: ${ZIPKIN_HOST}
-      DISCOVERYSERVER_HOST: ${DISCOVERYSERVER_HOST}
-
-  ## Account-Service Docker Compose Config
-  account-service:
-    container_name: account-service
-    image: robocon321/account-service:latest
-    ports:
-      - "9001:9001"
-    depends_on:
-      api-gateway:
-        condition: service_healthy
-    healthcheck:
-      test: "curl --fail --silent http://localhost:9001/actuator/health | grep UP || exit 1"
-      interval: 20s
-      timeout: 5s
-      retries: 3
-      start_interval: 10s
-    extends:
-      file: common-config.yml
-      service: microservice-base-config
-    environment:
-      SERVER_NAME: "account-service"
-      DB_PROTOCOL: ${DB_PROTOCOL}
-      DB_HOST: ${DB_HOST}
-      DB_PORT: ${DB_PORT}
-      DB_DATABASE: ${DB_DATABASE}
-      DB_USER: ${DB_USER}
-      DB_PASSWORD: ${DB_PASSWORD}
-      DB_DRIVER: ${DB_DRIVER}
-      DB_HIBERNATE_DIALECT: ${DB_HIBERNATE_DIALECT}
-      JWT_SECRET: ${JWT_SECRET}
-      JWT_EXPIRE: ${JWT_EXPIRE}
-      SPRING_SECURITY_USERNAME: ${SPRING_SECURITY_USERNAME}
-      SPRING_SECURITY_PASSWORD: ${SPRING_SECURITY_PASSWORD}
-      ZIPKIN_HOST: ${ZIPKIN_HOST}
-      DISCOVERYSERVER_HOST: ${DISCOVERYSERVER_HOST}
-
-  ## Auth-Service Docker Compose Config
-  auth-service:
-    container_name: auth-service
-    image: robocon321/auth-service:latest
-    ports:
-      - "9002:9002"
-    depends_on:
-      api-gateway:
-        condition: service_healthy
-    healthcheck:
-      test: "curl --fail --silent http://localhost:9002/actuator/health | grep UP || exit 1"
-      interval: 20s
-      timeout: 5s
-      retries: 3
-      start_interval: 10s
-    extends:
-      file: common-config.yml
-      service: microservice-base-config
-    environment:
-      SERVER_NAME: "auth-service"
-      DB_PROTOCOL: ${DB_PROTOCOL}
-      DB_HOST: ${DB_HOST}
-      DB_PORT: ${DB_PORT}
-      DB_DATABASE: ${DB_DATABASE}
-      DB_USER: ${DB_USER}
-      DB_PASSWORD: ${DB_PASSWORD}
-      DB_DRIVER: ${DB_DRIVER}
-      DB_HIBERNATE_DIALECT: ${DB_HIBERNATE_DIALECT}
-      JWT_SECRET: ${JWT_SECRET}
-      JWT_EXPIRE: ${JWT_EXPIRE}
-      SPRING_SECURITY_USERNAME: ${SPRING_SECURITY_USERNAME}
-      SPRING_SECURITY_PASSWORD: ${SPRING_SECURITY_PASSWORD}
-      ZIPKIN_HOST: ${ZIPKIN_HOST}
-      DISCOVERYSERVER_HOST: ${DISCOVERYSERVER_HOST}
-
-  ## File-Service Docker Compose Config
-  file-service:
-    container_name: file-service
-    image: robocon321/file-service:latest
-    ports:
-      - "9003:9003"
-    depends_on:
-      api-gateway:
-        condition: service_healthy
-    healthcheck:
-      test: "curl --fail --silent http://localhost:9003/actuator/health | grep UP || exit 1"
-      interval: 20s
-      timeout: 5s
-      retries: 3
-      start_interval: 10s
-    extends:
-      file: common-config.yml
-      service: microservice-base-config
-    environment:
-      SERVER_NAME: "file-service"
-      DB_PROTOCOL: ${DB_PROTOCOL}
-      DB_HOST: ${DB_HOST}
-      DB_PORT: ${DB_PORT}
-      DB_DATABASE: ${DB_DATABASE}
-      DB_USER: ${DB_USER}
-      DB_PASSWORD: ${DB_PASSWORD}
-      DB_DRIVER: ${DB_DRIVER}
-      DB_HIBERNATE_DIALECT: ${DB_HIBERNATE_DIALECT}
-      JWT_SECRET: ${JWT_SECRET}
-      JWT_EXPIRE: ${JWT_EXPIRE}
-      SPRING_SECURITY_USERNAME: ${SPRING_SECURITY_USERNAME}
-      SPRING_SECURITY_PASSWORD: ${SPRING_SECURITY_PASSWORD}
-      ZIPKIN_HOST: ${ZIPKIN_HOST}
-      DISCOVERYSERVER_HOST: ${DISCOVERYSERVER_HOST}
-
-  ## Location-Service Docker Compose Configs
-  location-service:
-    container_name: location-service
-    image: robocon321/location-service:latest
-    ports:
-      - "9004:9004"
-    depends_on:
-      api-gateway:
-        condition: service_healthy
-    healthcheck:
-      test: "curl --fail --silent http://localhost:9004/actuator/health | grep UP || exit 1"
-      interval: 20s
-      timeout: 5s
-      retries: 3
-      start_interval: 10s
-    extends:
-      file: common-config.yml
-      service: microservice-base-config
-    environment:
-      SERVER_NAME: "location-service"
-      DB_PROTOCOL: ${DB_PROTOCOL}
-      DB_HOST: ${DB_HOST}
-      DB_PORT: ${DB_PORT}
-      DB_DATABASE: ${DB_DATABASE}
-      DB_USER: ${DB_USER}
-      DB_PASSWORD: ${DB_PASSWORD}
-      DB_DRIVER: ${DB_DRIVER}
-      DB_HIBERNATE_DIALECT: ${DB_HIBERNATE_DIALECT}
-      JWT_SECRET: ${JWT_SECRET}
-      JWT_EXPIRE: ${JWT_EXPIRE}
-      SPRING_SECURITY_USERNAME: ${SPRING_SECURITY_USERNAME}
-      SPRING_SECURITY_PASSWORD: ${SPRING_SECURITY_PASSWORD}
-      ZIPKIN_HOST: ${ZIPKIN_HOST}
-      DISCOVERYSERVER_HOST: ${DISCOVERYSERVER_HOST}
-
-  ## Post-Service Docker Compose Config
-  post-service:
-    container_name: post-service
-    image: robocon321/post-service:latest
-    ports:
-      - "9005:9005"
-    depends_on:
-      api-gateway:
-        condition: service_healthy
-    healthcheck:
-      test: "curl --fail --silent http://localhost:9005/actuator/health | grep UP || exit 1"
-      interval: 20s
-      timeout: 5s
-      retries: 3
-      start_interval: 10s
-    extends:
-      file: common-config.yml
-      service: microservice-base-config
-    environment:
-      SERVER_NAME: "post-service"
-      DB_PROTOCOL: ${DB_PROTOCOL}
-      DB_HOST: ${DB_HOST}
-      DB_PORT: ${DB_PORT}
-      DB_DATABASE: ${DB_DATABASE}
-      DB_USER: ${DB_USER}
-      DB_PASSWORD: ${DB_PASSWORD}
-      DB_DRIVER: ${DB_DRIVER}
-      DB_HIBERNATE_DIALECT: ${DB_HIBERNATE_DIALECT}
-      JWT_SECRET: ${JWT_SECRET}
-      JWT_EXPIRE: ${JWT_EXPIRE}
-      SPRING_SECURITY_USERNAME: ${SPRING_SECURITY_USERNAME}
-      SPRING_SECURITY_PASSWORD: ${SPRING_SECURITY_PASSWORD}
-      ZIPKIN_HOST: ${ZIPKIN_HOST}
-      DISCOVERYSERVER_HOST: ${DISCOVERYSERVER_HOST}
-
-  ## Realtime-Service Docker Compose Config
-  realtime-service:
-    container_name: realtime-service
-    image: robocon321/realtime-service:latest
-    ports:
-      - "9006:9006"
-    depends_on:
-      api-gateway:
-        condition: service_healthy
-    healthcheck:
-      test: "curl --fail --silent http://localhost:9006/actuator/health | grep UP || exit 1"
-      interval: 20s
-      timeout: 5s
-      retries: 3
-      start_interval: 10s
-    extends:
-      file: common-config.yml
-      service: microservice-base-config
-    environment:
-      SERVER_NAME: "realtime-service"
       DB_PROTOCOL: ${DB_PROTOCOL}
       DB_HOST: ${DB_HOST}
       DB_PORT: ${DB_PORT}
@@ -319,25 +85,9 @@ services:
       - "9900:9090"
     volumes:
       - ../prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
-    depends_on:
-      account-service:
-        condition: service_healthy
-      auth-service:
-        condition: service_healthy
-      file-service:
-        condition: service_healthy
-      location-service:
-        condition: service_healthy
-      post-service:
-        condition: service_healthy
-      realtime-service:
-        condition: service_healthy
-    healthcheck:
-      test: "curl --fail --silent http://zipkin:9090 | grep UP || exit 1"
-      interval: 20s
-      timeout: 5s
-      retries: 3
-      start_interval: 10s
+    # depends_on:
+    #   facebook-clone-be:
+    #     condition: service_healthy
     extends:
       file: common-config.yml
       service: microservice-base-config
@@ -359,6 +109,7 @@ services:
     extends:
       file: common-config.yml
       service: microservice-base-config
+    user: "root:root"
 
 networks:
   robocon321:

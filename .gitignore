@@ -55,3 +55,6 @@ coverage-report/*
 
 # File service
 file-service/src/main/resources/static
+
+# Other
+grafana/**
