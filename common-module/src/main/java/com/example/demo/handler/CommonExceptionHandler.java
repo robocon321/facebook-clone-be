@@ -11,25 +11,36 @@ import org.springframework.web.context.request.WebRequest;
 import com.example.demo.exception.AuthorizeException;
 import com.example.demo.exception.BadRequestException;
 import com.example.demo.exception.BlockException;
+import com.example.demo.exception.ConflictException;
+import com.example.demo.exception.NotFoundException;
 
 @ControllerAdvice
 public class CommonExceptionHandler {
-	
+
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<Object> handleNotFoundException(NotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
 
     @ExceptionHandler(BlockException.class)
     public ResponseEntity<Object> handleBlockException(BlockException ex) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
     }
 
-	@ExceptionHandler(BindException.class)
-	public ResponseEntity<Object> handleArgumentNotValidException(BindException ex, WebRequest request) {
-		String message = "";
-		for (FieldError error : ex.getFieldErrors()) {
-			message += error.getDefaultMessage() + ". \n";
-		}
+    @ExceptionHandler(ConflictException.class)
+    public ResponseEntity<Object> handleConflictException(ConflictException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+    }
 
-		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(message);
-	}
+    @ExceptionHandler(BindException.class)
+    public ResponseEntity<Object> handleArgumentNotValidException(BindException ex, WebRequest request) {
+        StringBuilder message = new StringBuilder("");
+        for (FieldError error : ex.getFieldErrors()) {
+            message.append(error.getDefaultMessage()).append(". \n");
+        }
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(message.toString().trim());
+    }
 
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<Object> handleBadRequestException(BadRequestException ex) {

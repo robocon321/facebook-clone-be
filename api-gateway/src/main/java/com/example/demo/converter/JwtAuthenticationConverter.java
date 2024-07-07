@@ -12,7 +12,6 @@ import org.springframework.web.server.ServerWebExchange;
 import com.example.demo.config.CustomUserDetailService;
 import com.example.demo.provider.JwtProvider;
 
-import lombok.NoArgsConstructor;
 import reactor.core.publisher.Mono;
 
 @Component
@@ -22,7 +21,7 @@ public class JwtAuthenticationConverter implements ServerAuthenticationConverter
 
 	@Autowired
 	private CustomUserDetailService customUserDetailService;
-	
+
 	@Override
 	public Mono<Authentication> convert(ServerWebExchange exchange) {
 		try {

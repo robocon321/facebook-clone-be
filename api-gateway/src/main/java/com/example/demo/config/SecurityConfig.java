@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
-import org.springframework.security.config.annotation.web.socket.EnableWebSocketSecurity;
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
@@ -28,17 +27,18 @@ public class SecurityConfig {
 		config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
 
 		return http.csrf().disable()
-				.authorizeExchange(exchanges -> exchanges.pathMatchers("/account/**", "/friendship/**", "/post/**").authenticated()
-						.anyExchange().permitAll()
-						.and()
-						.cors().configurationSource(request -> config)
-						.and()
-//						.cors().disable()
-						.addFilterAt(jwtAuthenticationFilter, SecurityWebFiltersOrder.AUTHENTICATION))
+				.authorizeExchange(
+						exchanges -> exchanges.pathMatchers("/account/**", "/friendship/**", "/post/**").authenticated()
+								.anyExchange().permitAll()
+								.and()
+								.cors().configurationSource(request -> config)
+								.and()
+								// .cors().disable()
+								.addFilterAt(jwtAuthenticationFilter, SecurityWebFiltersOrder.AUTHENTICATION))
 				.build();
 
 	}
-	
+
 	@Autowired
 	public JwtAuthenticationFilter jwtAuthenticationFilter;
 }
