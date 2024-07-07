@@ -5,6 +5,9 @@ SUCCESS='\033[0;32m'
 WARNING='\033[0;33m'
 RESET='\033[0m'
 
+echo -e "${WARNING}Docker compose up mysql database${RESET}"
+sudo docker compose -f docker-compose/docker-compose.yml up -d mysql-db
+
 echo -e "${WARNING}Maven test and build artifact${RESET}"
 if ! command -v mvn > /dev/null 2>&1; then
     echo -e "${ERROR}Maven is not installed. Please install docker and try again${RESET}"

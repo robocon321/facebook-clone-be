@@ -319,25 +319,9 @@ services:
       - "9900:9090"
     volumes:
       - ../prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
-    depends_on:
-      account-service:
-        condition: service_healthy
-      auth-service:
-        condition: service_healthy
-      file-service:
-        condition: service_healthy
-      location-service:
-        condition: service_healthy
-      post-service:
-        condition: service_healthy
-      realtime-service:
-        condition: service_healthy
-    healthcheck:
-      test: "curl --fail --silent http://zipkin:9090 | grep UP || exit 1"
-      interval: 20s
-      timeout: 5s
-      retries: 3
-      start_interval: 10s
+    # depends_on:
+    #   facebook-clone-be:
+    #     condition: service_healthy
     extends:
       file: common-config.yml
       service: microservice-base-config
@@ -359,6 +343,7 @@ services:
     extends:
       file: common-config.yml
       service: microservice-base-config
+    user: "root:root"
 
 networks:
   robocon321:
