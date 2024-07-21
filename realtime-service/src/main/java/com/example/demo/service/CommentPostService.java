@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -22,6 +21,7 @@ import com.example.demo.entity.AccountEntity;
 import com.example.demo.entity.CommentPostEntity;
 import com.example.demo.entity.FileEntity;
 import com.example.demo.entity.PostEntity;
+import com.example.demo.exception.BadRequestException;
 import com.example.demo.exception.NotFoundException;
 import com.example.demo.repository.AccountRepository;
 import com.example.demo.repository.CommentPostRepository;
@@ -33,25 +33,30 @@ import com.example.demo.response.CommentPostResponse;
 import com.example.demo.response.EmotionCommentResponse;
 import com.example.demo.response.FileResponse;
 import com.example.demo.type.DeleteStatusType;
+import com.example.demo.type.ErrorCodeType;
 
 @Service
 public class CommentPostService {
-	@Autowired
 	private AccountRepository accountRepository;
 
-	@Autowired
 	private FileRepository fileRepository;
 
-	@Autowired
 	private CommentPostRepository commentPostRepository;
 
-	@Autowired
 	private PostRepository postRepository;
 
-	@Autowired
 	private RestTemplate restTemplate;
 
-	private String fileUrl = "http://localhost:9090/file";
+	private static final String FILE_URL = "http://localhost:9090/file";
+
+	public CommentPostService(AccountRepository accountRepository, FileRepository fileRepository,
+			CommentPostRepository commentPostRepository, PostRepository postRepository, RestTemplate restTemplate) {
+		this.accountRepository = accountRepository;
+		this.fileRepository = fileRepository;
+		this.commentPostRepository = commentPostRepository;
+		this.postRepository = postRepository;
+		this.restTemplate = restTemplate;
+	}
 
 	public CommentPostResponse createComment(CommentPostRequest request, Integer accountId) {
 
@@ -68,14 +73,13 @@ public class CommentPostService {
 
 			HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
 
-			ResponseEntity<FileResponse> fileResponse = restTemplate.postForEntity(fileUrl, requestEntity,
+			ResponseEntity<FileResponse> fileResponse = restTemplate.postForEntity(FILE_URL, requestEntity,
 					FileResponse.class);
 			FileResponse fileBodyResponse = fileResponse.getBody();
-			if (fileResponse.getStatusCode() == HttpStatus.OK) {
+			if (fileBodyResponse != null && fileResponse.getStatusCode() == HttpStatus.OK) {
 				Optional<FileEntity> fileOpt = fileRepository.findById(fileBodyResponse.getFileId());
 				if (fileOpt.isEmpty())
-					throw new NotFoundException("Save file fail");
-
+					throw new BadRequestException(ErrorCodeType.ERROR_CANNOT_SAVE_FILE, request.getFile().getName());
 				FileEntity file = fileOpt.get();
 				entity.setFile(file);
 			}
@@ -83,13 +87,13 @@ public class CommentPostService {
 
 		Optional<AccountEntity> accountOpt = accountRepository.findById(accountId);
 		if (accountOpt.isEmpty())
-			throw new NotFoundException("AccountID: " + accountId + " not found");
+			throw new NotFoundException(ErrorCodeType.ERROR_ACCOUNT_SPECIFIC_NOT_FOUND, accountId);
 		AccountEntity account = accountOpt.get();
 		entity.setAccount(account);
 
 		Optional<PostEntity> postOpt = postRepository.findById(request.getPostId());
 		if (postOpt.isEmpty())
-			throw new NotFoundException("PostID: " + request.getPostId() + " not found");
+			throw new NotFoundException(ErrorCodeType.ERROR_POST_SPECIFIC_NOT_FOUND, request.getPostId());
 		PostEntity post = postOpt.get();
 		entity.setPost(post);
 
@@ -97,20 +101,18 @@ public class CommentPostService {
 			Integer parentId = request.getParentId();
 			Optional<CommentPostEntity> commentOpt = commentPostRepository.findById(parentId);
 			if (commentOpt.isEmpty())
-				throw new NotFoundException("Comment parent Id: " + parentId + " not found");
+				throw new NotFoundException(ErrorCodeType.ERROR_COMMENT_SPECIFIC_NOT_FOUND, parentId);
 			CommentPostEntity parentComment = commentOpt.get();
 			entity.setParent(parentComment);
 		}
 
 		CommentPostEntity newEntity = commentPostRepository.save(entity);
-		CommentPostResponse response = mapCommentEntityToDTO(newEntity);
-		return response;
+		return mapCommentEntityToDTO(newEntity);
 	}
 
 	public List<CommentPostResponse> getAllCommentByPost(Integer postId) {
 		List<CommentPostEntity> entities = commentPostRepository.findByPostPostId(postId);
-		List<CommentPostResponse> responses = entities.stream().map(item -> mapCommentEntityToDTO(item)).toList();
-		return responses;
+		return entities.stream().map(this::mapCommentEntityToDTO).toList();
 	}
 
 	private CommentPostResponse mapCommentEntityToDTO(CommentPostEntity entity) {
@@ -142,7 +144,7 @@ public class CommentPostService {
 				int accountMentionId = mentions[i];
 				Optional<AccountEntity> accountMentionOpt = accountRepository.findById(accountMentionId);
 				if (accountMentionOpt.isEmpty())
-					throw new NotFoundException("Mention AccountID: " + accountMentionId);
+					throw new NotFoundException(ErrorCodeType.ERROR_ACCOUNT_SPECIFIC_NOT_FOUND, accountMentionId);
 				AccountEntity accountMention = accountMentionOpt.get();
 				AccountResponse accountMenResponse = new AccountResponse();
 				BeanUtils.copyProperties(accountMention, accountMenResponse);
@@ -150,7 +152,6 @@ public class CommentPostService {
 			}
 
 			response.setMentions(accountResponses);
-			;
 		}
 
 		if (entity.getEmotions() != null) {

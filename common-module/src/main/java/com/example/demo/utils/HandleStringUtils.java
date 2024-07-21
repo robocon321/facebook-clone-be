@@ -2,9 +2,13 @@ package com.example.demo.utils;
 
 import java.security.SecureRandom;
 
-public class HandleStringUtils {
+public final class HandleStringUtils {
     private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     private static final SecureRandom RANDOM = new SecureRandom();
+
+    private HandleStringUtils() {
+        throw new IllegalStateException("Utility class");
+    }
 
     public static String generateRandomString(int length) {
         StringBuilder stringBuilder = new StringBuilder(length);

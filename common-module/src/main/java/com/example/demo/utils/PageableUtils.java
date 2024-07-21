@@ -8,10 +8,14 @@ import org.springframework.data.domain.Sort;
 
 import com.example.demo.request.CustomPageRequest;
 
-public class PageableUtils {
+public final class PageableUtils {
+	private PageableUtils() {
+		throw new IllegalStateException("Utility class");
+	}
+
 	public static Pageable createPageableFromCustomPageRequest(CustomPageRequest request) {
 		Pageable pageable = null;
-		if(request.getSortBy() == null) {
+		if (request.getSortBy() == null) {
 			pageable = PageRequest.of(request.getPage(), request.getSize());
 		} else {
 			Sort.Order[] orders = IntStream.range(0, request.getSortBy().length).mapToObj(

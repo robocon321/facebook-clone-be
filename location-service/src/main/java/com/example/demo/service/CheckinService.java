@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -19,12 +18,15 @@ import com.example.demo.response.CustomPageResponse;
 
 @Service
 public class CheckinService {
-	@Autowired
 	private CheckinRepository checkinRepository;
-	
+
+	public CheckinService(CheckinRepository checkinRepository) {
+		this.checkinRepository = checkinRepository;
+	}
+
 	public CustomPageResponse search(CheckinRequest request) {
 		Pageable pageable = null;
-		if(request.getSortBy() == null) {
+		if (request.getSortBy() == null) {
 			pageable = PageRequest.of(request.getPage(), request.getSize());
 		} else {
 			Sort.Order[] orders = IntStream.range(0, request.getSortBy().length).mapToObj(
@@ -41,12 +43,10 @@ public class CheckinService {
 					BeanUtils.copyProperties(checkin, response);
 					return response;
 				}).toList();
-		
-		CustomPageResponse pageResponse = CustomPageResponse.builder()
+
+		return CustomPageResponse.builder()
 				.data(pageDTO)
 				.totalItem(pageEntity.getTotalElements())
 				.totalPage(pageEntity.getTotalPages()).build();
-
-		return pageResponse;
 	}
 }

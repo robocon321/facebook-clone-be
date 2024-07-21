@@ -1,6 +1,5 @@
 package com.example.demo.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -14,13 +13,18 @@ import com.example.demo.service.ProfileService;
 @RestController
 @RequestMapping("/api/v1/profile")
 public class ProfileController {
-	@Autowired
 	private ProfileService profileService;
-	
+
+	public ProfileController(ProfileService profileService) {
+		this.profileService = profileService;
+	}
+
 	@GetMapping
-	public ProfileResponse getSummaryInfo(@RequestParam("profileId") Integer profileId, @RequestHeader HttpHeaders headers) {
+	public ProfileResponse getSummaryInfo(@RequestParam("profileId") Integer profileId,
+			@RequestHeader HttpHeaders headers) {
 		String bearerToken = headers.getFirst("Authorization");
-		if(bearerToken == null) return profileService.getProfileInfoByAnonymous(profileId);
+		if (bearerToken == null)
+			return profileService.getProfileInfoByAnonymous(profileId);
 
 		if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
 			String token = bearerToken.substring(7);

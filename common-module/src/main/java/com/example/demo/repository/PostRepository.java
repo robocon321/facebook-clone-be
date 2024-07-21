@@ -16,5 +16,5 @@ public interface PostRepository extends JpaRepository<PostEntity, Integer> {
 			+ "	FROM friendship WHERE status = 'A' AND (receiver_id = :account_id OR sender_id = :account_id)"
 			+ ") OR account_id = :account_id", nativeQuery = true)
 	Page<PostEntity> recommendPost(@Param("account_id") Integer accountId, Pageable pageable);
-	
+
 }

@@ -29,7 +29,7 @@ public class TagImagePostEntity {
 
 	@Column(nullable = false)
 	private Double yPos;
-	
+
 	@ManyToOne
 	@JoinColumn(nullable = false, name = "account_id")
 	private AccountEntity account;

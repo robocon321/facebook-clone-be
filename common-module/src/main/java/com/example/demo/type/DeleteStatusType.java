@@ -1,13 +1,14 @@
 package com.example.demo.type;
 
+import java.util.Objects;
 import java.util.stream.Stream;
 
 public enum DeleteStatusType {
 	ACTIVE('A'),
 	INACTIVE('I');
-	
+
 	private Character status;
-	
+
 	DeleteStatusType(char status) {
 		this.setStatus(status);
 	}
@@ -19,12 +20,12 @@ public enum DeleteStatusType {
 	public void setStatus(Character status) {
 		this.status = status;
 	}
-	
-    public static DeleteStatusType of(Character status) {
-        return Stream.of(DeleteStatusType.values())
-          .filter(p -> p.getStatus() == status)
-          .findFirst()
-          .orElseThrow(IllegalArgumentException::new);
-    }
+
+	public static DeleteStatusType of(Character status) {
+		return Stream.of(DeleteStatusType.values())
+				.filter(p -> Objects.equals(p.getStatus(), status))
+				.findFirst()
+				.orElseThrow(IllegalArgumentException::new);
+	}
 
 }

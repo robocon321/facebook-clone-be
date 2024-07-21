@@ -1,14 +1,15 @@
 package com.example.demo.exception;
 
+import java.text.MessageFormat;
+
+import com.example.demo.type.ErrorCodeType;
 
 public class BlockException extends RuntimeException {
+	public BlockException(ErrorCodeType code) {
+		super(code.getMessage());
+	}
 
-    /**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-
-	public BlockException(String message) {
-        super(message);
-    }
+	public BlockException(ErrorCodeType code, Object... params) {
+		super(MessageFormat.format(code.getMessage(), params));
+	}
 }

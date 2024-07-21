@@ -34,32 +34,32 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "post")
 public class PostEntity {
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Integer postId;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer postId;
 
-	@Column(columnDefinition = "NVARCHAR(500)")
-	private String text;
-	
-	private Integer emotionId;
-	
-	@Column(nullable = false)
-	private Timestamp createTime;
-	
-	@Column(nullable = false)
-	private Timestamp modTime;
+    @Column(columnDefinition = "NVARCHAR(500)")
+    private String text;
 
-	@Transient
-	private PostScopeType scope;
+    private Integer emotionId;
 
-	@Column(nullable = false, name = "scope", columnDefinition = "CHAR(1)")	
-	private Character scopeValue;
-	
-	@Transient
-	private DeleteStatusType status;
-	
-	@Column(nullable = false, name = "status", columnDefinition = "CHAR(1)")	
-	private Character statusValue;
+    @Column(nullable = false)
+    private Timestamp createTime;
+
+    @Column(nullable = false)
+    private Timestamp modTime;
+
+    @Transient
+    private PostScopeType scope;
+
+    @Column(nullable = false, name = "scope", columnDefinition = "CHAR(1)")
+    private Character scopeValue;
+
+    @Transient
+    private DeleteStatusType status;
+
+    @Column(nullable = false, name = "status", columnDefinition = "CHAR(1)")
+    private Character statusValue;
 
     @PrePersist
     void fillGenderPersistent() {
@@ -76,27 +76,24 @@ public class PostEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(nullable = false, name = "account_id")
     private AccountEntity account;
-    
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "checkin_id")
     private CheckinEntity checkin;
 
-    @ManyToMany(cascade = {CascadeType.PERSIST}, fetch = FetchType.LAZY)
-    @JoinTable(name = "tag_post",
-            joinColumns = @JoinColumn(name = "post_id"),  
-            inverseJoinColumns = @JoinColumn(name = "account_id")
-    )
+    @ManyToMany(cascade = { CascadeType.PERSIST }, fetch = FetchType.LAZY)
+    @JoinTable(name = "tag_post", joinColumns = @JoinColumn(name = "post_id"), inverseJoinColumns = @JoinColumn(name = "account_id"))
     private List<AccountEntity> tags;
-    
-    @OneToMany(cascade = {CascadeType.PERSIST}, fetch = FetchType.LAZY, mappedBy = "post")
+
+    @OneToMany(cascade = { CascadeType.PERSIST }, fetch = FetchType.LAZY, mappedBy = "post")
     private List<ImagePostEntity> imagePosts;
 
-    @OneToMany(cascade = {CascadeType.PERSIST}, fetch = FetchType.LAZY, mappedBy = "post")
+    @OneToMany(cascade = { CascadeType.PERSIST }, fetch = FetchType.LAZY, mappedBy = "post")
     private List<VideoPostEntity> videoPosts;
 
-    @OneToMany(cascade = {CascadeType.PERSIST}, fetch = FetchType.LAZY, mappedBy = "post")
+    @OneToMany(cascade = { CascadeType.PERSIST }, fetch = FetchType.LAZY, mappedBy = "post")
     private List<CommentPostEntity> comments;
 
-    @OneToMany(cascade = {CascadeType.PERSIST}, fetch = FetchType.LAZY, mappedBy = "post")
+    @OneToMany(cascade = { CascadeType.PERSIST }, fetch = FetchType.LAZY, mappedBy = "post")
     private List<EmotionPostEntity> emotions;
 }

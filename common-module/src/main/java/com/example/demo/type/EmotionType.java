@@ -1,5 +1,6 @@
 package com.example.demo.type;
 
+import java.util.Objects;
 import java.util.stream.Stream;
 
 public enum EmotionType {
@@ -10,26 +11,22 @@ public enum EmotionType {
 	WOW('W'),
 	CRY('C'),
 	ANGRY('R');
-	
+
 	private Character emotion;
-	
+
 	EmotionType(char emotion) {
-		this.setEmotion(emotion);
+		this.emotion = emotion;
 	}
 
 	public Character getEmotion() {
 		return emotion;
 	}
 
-	public void setEmotion(Character emotion) {
-		this.emotion = emotion;
+	public static EmotionType of(Character emotion) {
+		return Stream.of(EmotionType.values())
+				.filter(p -> Objects.equals(p.getEmotion(), emotion))
+				.findFirst()
+				.orElseThrow(IllegalArgumentException::new);
 	}
-	
-    public static EmotionType of(Character emotion) {
-        return Stream.of(EmotionType.values())
-          .filter(p -> p.getEmotion() == emotion)
-          .findFirst()
-          .orElseThrow(IllegalArgumentException::new);
-    }
 
 }

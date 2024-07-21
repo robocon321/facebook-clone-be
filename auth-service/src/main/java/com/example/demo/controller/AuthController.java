@@ -1,6 +1,5 @@
 package com.example.demo.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -28,39 +27,40 @@ import jakarta.ws.rs.BadRequestException;
 @RestController
 @RequestMapping("/api/v1/auth")
 public class AuthController {
-    @Autowired
     private AuthService service;
-
-    @Autowired
     private AuthenticationManager authenticationManager;
+
+    public AuthController(AuthService service, AuthenticationManager authenticationManager) {
+        this.service = service;
+        this.authenticationManager = authenticationManager;
+    }
 
     @PostMapping("/register")
     public ResponseEntity<CreateAccountResponse> addNewAccount(@Valid @RequestBody CreateAccountRequest request) {
-    	try {
-        	CreateAccountResponse response = service.saveAccount(request);
-        	return ResponseEntity.status(HttpStatus.CREATED).body(response);    		
-    	} catch (RuntimeException e) {
-    		e.printStackTrace();
-    		throw new ResourceCreationException("Dupliation account email or phone");
-    	}
+        try {
+            CreateAccountResponse response = service.saveAccount(request);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (RuntimeException e) {
+            e.printStackTrace();
+            throw new ResourceCreationException("Duplication account email or phone");
+        }
     }
 
     @PostMapping("/token")
     public String getToken(@Valid @RequestBody LoginRequest request) {
-    	try {
-            Authentication authenticate = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));    		
+        try {
+            Authentication authenticate = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
             if (authenticate.isAuthenticated()) {
-                return service.generateToken((CustomUserDetails) authenticate.getPrincipal()); 
+                return service.generateToken((CustomUserDetails) authenticate.getPrincipal());
             } else {
                 throw new BadRequestException("Invalid access");
             }
-    	} catch(BlockException e) {
-    		e.printStackTrace();
-    		throw e;
-    	} catch(Exception e) {
-    		e.printStackTrace();
-    		throw new AuthorizeException("Username or password is incorrect");    		
-    	}
+        } catch (BlockException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new AuthorizeException("Username or password is incorrect");
+        }
     }
 
     @GetMapping("/validate")
@@ -68,9 +68,9 @@ public class AuthController {
         service.validateToken(token);
         return "Token is valid";
     }
-    
+
     @GetMapping
     public String welcome() {
-    	return "Hello world";
+        return "Hello world";
     }
 }

@@ -7,7 +7,6 @@ import java.util.Optional;
 import java.util.stream.IntStream;
 
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -31,40 +30,43 @@ import com.example.demo.response.HistoryAccountResponse;
 import com.example.demo.response.RecommendAccountResponse;
 import com.example.demo.type.ActionHistoryStatusType;
 import com.example.demo.type.DeleteStatusType;
+import com.example.demo.type.ErrorCodeType;
 
 @Service
 public class AccountService {
-	@Autowired
 	private JwtProvider jwtProvider;
-
-	@Autowired
 	private AccountRepository accountRepository;
-	
-	@Autowired
 	private ActionHistoryRepository actionHistoryRepository;
+
+	public AccountService(JwtProvider jwtProvider, AccountRepository accountRepository,
+			ActionHistoryRepository actionHistoryRepository) {
+		this.jwtProvider = jwtProvider;
+		this.accountRepository = accountRepository;
+		this.actionHistoryRepository = actionHistoryRepository;
+	}
 
 	public AccountResponse getSummaryInfo(String token) {
 		Integer id = jwtProvider.getAccountIdFromJWT(token);
 		Optional<AccountEntity> accountOpt = accountRepository.findById(id);
 		if (accountOpt.isEmpty())
-			throw new NotFoundException("Your account does not exists");
+			throw new NotFoundException(ErrorCodeType.ERROR_ACCOUNT_NOT_FOUND);
 		AccountEntity account = accountOpt.get();
 		if (account.getStatus() == DeleteStatusType.INACTIVE)
-			throw new BlockException("Your account is blocked. Please contact us to active your account");
+			throw new BlockException(ErrorCodeType.ERROR_ACCOUNT_BLOCKED);
 		AccountResponse response = new AccountResponse();
 		BeanUtils.copyProperties(account, response);
 		return response;
 	}
-	
+
 	public CustomPageResponse getFriendHistory(FriendHistoryRequest request, String token) {
 		Integer currentId = jwtProvider.getAccountIdFromJWT(token);
 		Optional<AccountEntity> accountOpt = accountRepository.findById(currentId);
 		if (accountOpt.isEmpty())
-			throw new NotFoundException("Your account does not exists");
+			throw new NotFoundException(ErrorCodeType.ERROR_ACCOUNT_NOT_FOUND);
 		AccountEntity account = accountOpt.get();
 		if (account.getStatus() == DeleteStatusType.INACTIVE)
-			throw new BlockException("Your account is blocked. Please contact us to active your account");
-		
+			throw new BlockException(ErrorCodeType.ERROR_ACCOUNT_BLOCKED);
+
 		Pageable pageable = null;
 		if (request.getSortBy() == null) {
 			pageable = PageRequest.of(request.getPage(), request.getSize());
@@ -76,24 +78,28 @@ public class AccountService {
 			Sort sort = Sort.by(orders);
 			pageable = PageRequest.of(request.getPage(), request.getSize(), sort);
 		}
-		Page<AccountEntity> pageEntity = accountRepository.findByCurrentIdAndFriendshipStatus(currentId, 'A', "", pageable);
-		
+		Page<AccountEntity> pageEntity = accountRepository.findByCurrentIdAndFriendshipStatus(currentId, 'A', "",
+				pageable);
+
 		List<HistoryAccountResponse> data = new ArrayList<>();
-		
+
 		pageEntity.getContent().stream().forEach(item -> {
 			HistoryAccountResponse historyAccountResponse = new HistoryAccountResponse();
-			Optional<ActionHistoryEntity> actionHistoryOpt = null;
-			if(request.getType() == null) {
-				actionHistoryOpt = actionHistoryRepository.findFirstByAccountAccountIdOrderByActionTimeDesc(item.getAccountId());				
+			Optional<ActionHistoryEntity> actionHistoryOpt = Optional.empty();
+			if (request.getType() == null) {
+				actionHistoryOpt = actionHistoryRepository
+						.findFirstByAccountAccountIdOrderByActionTimeDesc(item.getAccountId());
 			} else {
-				actionHistoryOpt = actionHistoryRepository.findFirstByAccountAccountIdAndStatusValueOrderByActionTimeDesc(item.getAccountId(), request.getType().getStatus());
+				actionHistoryOpt = actionHistoryRepository
+						.findFirstByAccountAccountIdAndStatusValueOrderByActionTimeDesc(item.getAccountId(),
+								request.getType().getStatus());
 			}
 
 			AccountResponse accountResponse = new AccountResponse();
 			BeanUtils.copyProperties(item, accountResponse);
 			historyAccountResponse.setAccount(accountResponse);
 
-			if(actionHistoryOpt.isPresent()) {
+			if (actionHistoryOpt.isPresent()) {
 				ActionHistoryResponse actionHistoryResponse = new ActionHistoryResponse();
 				ActionHistoryEntity actionHistory = actionHistoryOpt.get();
 				BeanUtils.copyProperties(actionHistory, actionHistoryResponse);
@@ -101,22 +107,19 @@ public class AccountService {
 			}
 			data.add(historyAccountResponse);
 		});
-		
-		CustomPageResponse response = CustomPageResponse.builder()
+
+		return CustomPageResponse.builder()
 				.data(data)
 				.totalItem(pageEntity.getTotalElements())
 				.totalPage(pageEntity.getTotalPages())
 				.build();
-		
-		return response;
 	}
 
-	
 	public CustomPageResponse getListAccountByFriendshipStatus(AccountFriendshipRequest request, String token) {
 		Integer currentId = jwtProvider.getAccountIdFromJWT(token);
 		Optional<AccountEntity> accountOpt = accountRepository.findById(currentId);
 		if (accountOpt.isEmpty())
-			throw new NotFoundException("Your account does not exists");
+			throw new NotFoundException(ErrorCodeType.ERROR_ACCOUNT_NOT_FOUND);
 		Pageable pageable = null;
 		if (request.getSortBy() == null) {
 			pageable = PageRequest.of(request.getPage(), request.getSize());
@@ -129,7 +132,7 @@ public class AccountService {
 			pageable = PageRequest.of(request.getPage(), request.getSize(), sort);
 		}
 		Page<AccountEntity> pageEntity;
-		if (request.getExcludeIds().size() == 0) {
+		if (request.getExcludeIds().isEmpty()) {
 			pageEntity = accountRepository.findByCurrentIdAndFriendshipStatus(currentId,
 					request.getStatus().getStatus(), request.getSearch(), pageable);
 		} else {
@@ -143,7 +146,7 @@ public class AccountService {
 		Integer currentId = jwtProvider.getAccountIdFromJWT(token);
 		Optional<AccountEntity> accountOpt = accountRepository.findById(currentId);
 		if (accountOpt.isEmpty())
-			throw new NotFoundException("Your account does not exists");
+			throw new NotFoundException(ErrorCodeType.ERROR_ACCOUNT_NOT_FOUND);
 		Pageable pageable = null;
 		if (request.getSortBy() == null) {
 			pageable = PageRequest.of(request.getPage(), request.getSize());
@@ -156,7 +159,7 @@ public class AccountService {
 			pageable = PageRequest.of(request.getPage(), request.getSize(), sort);
 		}
 		Page<AccountEntity> pageEntity;
-		if (request.getExcludeIds().size() == 0) {
+		if (request.getExcludeIds().isEmpty()) {
 			pageEntity = accountRepository.findBySenderIdAndFriendshipStatus(currentId, request.getStatus().getStatus(),
 					request.getSearch(), pageable);
 		} else {
@@ -170,7 +173,7 @@ public class AccountService {
 		Integer currentId = jwtProvider.getAccountIdFromJWT(token);
 		Optional<AccountEntity> accountOpt = accountRepository.findById(currentId);
 		if (accountOpt.isEmpty())
-			throw new NotFoundException("Your account does not exists");
+			throw new NotFoundException(ErrorCodeType.ERROR_ACCOUNT_NOT_FOUND);
 		Pageable pageable = null;
 		if (request.getSortBy() == null) {
 			pageable = PageRequest.of(request.getPage(), request.getSize());
@@ -183,11 +186,13 @@ public class AccountService {
 			pageable = PageRequest.of(request.getPage(), request.getSize(), sort);
 		}
 		Page<AccountEntity> pageEntity;
-		if (request.getExcludeIds().size() == 0) {
-			pageEntity = accountRepository.findByReceiverIdAndFriendshipStatus(currentId, request.getStatus().getStatus(),
+		if (request.getExcludeIds().isEmpty()) {
+			pageEntity = accountRepository.findByReceiverIdAndFriendshipStatus(currentId,
+					request.getStatus().getStatus(),
 					request.getSearch(), pageable);
 		} else {
-			pageEntity = accountRepository.findByReceiverIdAndFriendshipStatus(currentId, request.getStatus().getStatus(),
+			pageEntity = accountRepository.findByReceiverIdAndFriendshipStatus(currentId,
+					request.getStatus().getStatus(),
 					request.getSearch(), request.getExcludeIds(), pageable);
 		}
 		return pageEntityToPageResponse(pageEntity, currentId);
@@ -197,7 +202,7 @@ public class AccountService {
 		Integer currentId = jwtProvider.getAccountIdFromJWT(token);
 		Optional<AccountEntity> accountOpt = accountRepository.findById(currentId);
 		if (accountOpt.isEmpty())
-			throw new NotFoundException("Your account does not exists");
+			throw new NotFoundException(ErrorCodeType.ERROR_ACCOUNT_NOT_FOUND);
 		Pageable pageable = null;
 		if (request.getSortBy() == null) {
 			pageable = PageRequest.of(request.getPage(), request.getSize());
@@ -210,21 +215,22 @@ public class AccountService {
 			pageable = PageRequest.of(request.getPage(), request.getSize(), sort);
 		}
 		Page<AccountEntity> pageEntity;
-		if (request.getExcludeIds().size() == 0) {
+		if (request.getExcludeIds().isEmpty()) {
 			pageEntity = accountRepository.recommendAccount(currentId,
 					request.getSearch(), pageable);
 		} else {
-			pageEntity = accountRepository.recommendAccount(currentId, request.getSearch(), request.getExcludeIds(), pageable);
+			pageEntity = accountRepository.recommendAccount(currentId, request.getSearch(), request.getExcludeIds(),
+					pageable);
 		}
 
 		return pageEntityToPageResponse(pageEntity, currentId);
 	}
-	
+
 	public ActionHistoryResponse updateHistory(ActionHistoryStatusType type, String token) {
 		Integer currentId = jwtProvider.getAccountIdFromJWT(token);
 		Optional<AccountEntity> accountOpt = accountRepository.findById(currentId);
 		if (accountOpt.isEmpty())
-			throw new NotFoundException("Your account does not exists");
+			throw new NotFoundException(ErrorCodeType.ERROR_ACCOUNT_NOT_FOUND);
 
 		Timestamp now = new Timestamp(System.currentTimeMillis());
 		ActionHistoryEntity actionHistory = ActionHistoryEntity.builder()
@@ -232,18 +238,18 @@ public class AccountService {
 				.actionTime(now)
 				.status(type)
 				.build();
-		
+
 		ActionHistoryEntity newActionHistory = actionHistoryRepository.save(actionHistory);
 		ActionHistoryResponse historyResponse = new ActionHistoryResponse();
 		BeanUtils.copyProperties(newActionHistory, historyResponse);
 		return historyResponse;
 	}
-	
+
 	private CustomPageResponse pageEntityToPageResponse(Page<AccountEntity> pageEntity, Integer currentId) {
 		List<RecommendAccountResponse> pageDTO = pageEntity.stream().map(account -> {
 			RecommendAccountResponse response = new RecommendAccountResponse();
 			BeanUtils.copyProperties(account, response);
-			
+
 			List<AccountEntity> manualFriends = accountRepository.findManualFriends(currentId, account.getAccountId());
 			List<AccountResponse> manualFriendsResponse = manualFriends.stream().map(item -> {
 				AccountResponse accountResponse = new AccountResponse();
@@ -251,14 +257,12 @@ public class AccountService {
 				return accountResponse;
 			}).toList();
 			response.setManualFriends(manualFriendsResponse);
-			
+
 			return response;
 		}).toList();
-				
-		CustomPageResponse pageResponse = CustomPageResponse.builder().data(pageDTO)
+
+		return CustomPageResponse.builder().data(pageDTO)
 				.totalItem(pageEntity.getTotalElements()).totalPage(pageEntity.getTotalPages()).build();
-		
-		return pageResponse;
 	}
-	
+
 }

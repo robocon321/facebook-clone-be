@@ -1,6 +1,5 @@
 package com.example.demo.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,37 +20,48 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("/api/v1/friendship")
 public class FriendshipController {
-	@Autowired	
 	private FriendshipService friendshipService;
-	
-	@Autowired
 	private JwtProvider jwtProvider;
+
+	public FriendshipController(FriendshipService friendshipService, JwtProvider jwtProvider) {
+		this.friendshipService = friendshipService;
+		this.jwtProvider = jwtProvider;
+	}
 
 	@PostMapping("/create")
 	public ResponseEntity<FriendshipResponse> createFriendship(@Valid @RequestBody CreateFriendshipRequest request,
 			@RequestHeader HttpHeaders headers) {
 		// Get senderId
 		String authorizationHeader = headers.getFirst("Authorization");
-		String token = authorizationHeader.substring(7);
+		String token;
+		if (authorizationHeader == null) {
+			token = "";
+		} else {
+			token = authorizationHeader.substring(7);
+		}
 		Integer senderId = jwtProvider.getAccountIdFromJWT(token);
-		
+
 		// Return response
-		FriendshipResponse response = friendshipService.createFriendship(request.getReceiverId(), senderId, request.getStatus());
+		FriendshipResponse response = friendshipService.createFriendship(request.getReceiverId(), senderId,
+				request.getStatus());
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
-	
+
 	@PostMapping("/check-sender")
 	public boolean checkSenderBlock(@Valid @RequestBody CreateFriendshipRequest request,
 			@RequestHeader HttpHeaders headers) {
 		String authorizationHeader = headers.getFirst("Authorization");
-		String token = authorizationHeader.substring(7);
+		String token;
+		if (authorizationHeader == null) {
+			token = "";
+		} else {
+			token = authorizationHeader.substring(7);
+		}
 		Integer senderId = jwtProvider.getAccountIdFromJWT(token);
-		
-		// Return response
-		boolean response = friendshipService.checkBlockFromSender(request.getReceiverId(), senderId);
-		return response;		
+
+		return friendshipService.checkBlockFromSender(request.getReceiverId(), senderId);
 	}
-	
+
 	@GetMapping
 	public String sayHi() {
 		return "Hello world";

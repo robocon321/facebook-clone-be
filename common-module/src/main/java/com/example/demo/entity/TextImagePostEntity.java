@@ -26,19 +26,19 @@ public class TextImagePostEntity {
 
 	@Column(nullable = false)
 	private String text;
-	
+
 	@Column(nullable = false)
 	private Double xPos;
-	
+
 	@Column(nullable = false)
 	private Double yPos;
-	
+
 	@Column(nullable = false)
 	private String color;
-	
+
 	@Column(nullable = false)
 	private Double size;
-	
+
 	@ManyToOne
 	@JoinColumn(nullable = false, name = "image_post_id")
 	private ImagePostEntity imagePost;

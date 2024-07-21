@@ -1,6 +1,5 @@
 package com.example.demo.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,11 +14,14 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("/api/v1/checkin")
 public class CheckinController {
-	@Autowired
 	private CheckinService checkinService;
-	
+
+	public CheckinController(CheckinService checkinService) {
+		this.checkinService = checkinService;
+	}
+
 	@GetMapping
-	public CustomPageResponse getListFriendshipStatus(@ModelAttribute @Valid CheckinRequest request) {		
-		return checkinService.search(request);		
+	public CustomPageResponse getListFriendshipStatus(@ModelAttribute @Valid CheckinRequest request) {
+		return checkinService.search(request);
 	}
 }

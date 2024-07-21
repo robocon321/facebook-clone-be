@@ -1,6 +1,5 @@
 package com.example.demo.converter;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,31 +15,29 @@ import reactor.core.publisher.Mono;
 
 @Component
 public class JwtAuthenticationConverter implements ServerAuthenticationConverter {
-	@Autowired
 	private JwtProvider tokenProvider;
-
-	@Autowired
 	private CustomUserDetailService customUserDetailService;
+
+	public JwtAuthenticationConverter(JwtProvider tokenProvider, CustomUserDetailService customUserDetailService) {
+		this.tokenProvider = tokenProvider;
+		this.customUserDetailService = customUserDetailService;
+	}
 
 	@Override
 	public Mono<Authentication> convert(ServerWebExchange exchange) {
-		try {
-			String jwt = extractTokenFromRequest(exchange);
-			if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
-				Integer userId = tokenProvider.getAccountIdFromJWT(jwt);
-				UserDetails userDetails = customUserDetailService.loadUserById(userId);
-				if (jwt != null) {
-					return Mono.just(new UsernamePasswordAuthenticationToken(userDetails, null,
-							userDetails.getAuthorities()));
-				}
+		String jwt = extractTokenFromRequest(exchange);
+		if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
+			Integer userId = tokenProvider.getAccountIdFromJWT(jwt);
+			UserDetails userDetails = customUserDetailService.loadUserById(userId);
+			if (jwt != null) {
+				return Mono.just(new UsernamePasswordAuthenticationToken(userDetails, null,
+						userDetails.getAuthorities()));
 			}
-		} catch (Exception ex) {
-			ex.printStackTrace();
 		}
 		return Mono.empty();
 	}
 
-	private String extractTokenFromRequest(ServerWebExchange exchange) {
+	private static String extractTokenFromRequest(ServerWebExchange exchange) {
 		String token = exchange.getRequest().getHeaders().getFirst("Authorization");
 		if (token != null && token.startsWith("Bearer ")) {
 			return token.substring(7);

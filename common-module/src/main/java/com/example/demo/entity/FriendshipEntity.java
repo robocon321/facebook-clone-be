@@ -31,32 +31,32 @@ public class FriendshipEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer friendshipId;
-	
+
 	@ManyToOne
 	@JoinColumn(name = "sender_id", nullable = false)
 	private AccountEntity sender;
-	
+
 	@ManyToOne
 	@JoinColumn(name = "receiver_id", nullable = false)
 	private AccountEntity receiver;
-	
+
 	@Transient
 	private FriendshipStatusType status;
-	
-	@Column(nullable = false, name = "status", columnDefinition = "CHAR(1)")	
+
+	@Column(nullable = false, name = "status", columnDefinition = "CHAR(1)")
 	private Character statusValue;
 
-    @PrePersist
-    @PreUpdate
-    void fillGenderPersistent() {
-        this.statusValue = status.getStatus();
-    }
+	@PrePersist
+	@PreUpdate
+	void fillGenderPersistent() {
+		this.statusValue = status.getStatus();
+	}
 
-    @PostLoad
-    void fillGenderTransient() {
-        this.status = FriendshipStatusType.of(statusValue);
-    }
- 
+	@PostLoad
+	void fillGenderTransient() {
+		this.status = FriendshipStatusType.of(statusValue);
+	}
+
 	@Column(nullable = false)
 	private Timestamp requestTime;
 }

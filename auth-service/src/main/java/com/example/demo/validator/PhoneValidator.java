@@ -7,6 +7,12 @@ import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
 public class PhoneValidator implements ConstraintValidator<ValidPhone, String> {
+
+    /**
+     * @param phone
+     * @param context
+     * @return boolean
+     */
     @Override
     public boolean isValid(String phone, ConstraintValidatorContext context) {
         if (phone == null) {

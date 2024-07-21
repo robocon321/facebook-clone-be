@@ -40,38 +40,37 @@ public class ImagePostEntity {
 
 	@Column(nullable = false)
 	private Timestamp createTime;
-	
+
 	@Column(nullable = false)
 	private Timestamp modTime;
-	
+
 	@Transient
 	private DeleteStatusType status;
-	
-	@Column(nullable = false, name = "status", columnDefinition = "CHAR(1)")	
+
+	@Column(nullable = false, name = "status", columnDefinition = "CHAR(1)")
 	private Character statusValue;
 
-    @PrePersist
-    void fillGenderPersistent() {
-        this.statusValue = status.getStatus();
-    }
+	@PrePersist
+	void fillGenderPersistent() {
+		this.statusValue = status.getStatus();
+	}
 
-    @PostLoad
-    void fillGenderTransient() {
-        this.status = DeleteStatusType.of(statusValue);
-    }
+	@PostLoad
+	void fillGenderTransient() {
+		this.status = DeleteStatusType.of(statusValue);
+	}
 
 	@OneToOne
 	@JoinColumn(nullable = false, name = "file_id")
-	private FileEntity file;	
-	
+	private FileEntity file;
 
 	@ManyToOne
 	@JoinColumn(nullable = false, name = "post_id")
-	private PostEntity post;	
-    
-    @OneToMany(cascade = {CascadeType.PERSIST}, fetch = FetchType.LAZY, mappedBy = "imagePost")
-    private List<TextImagePostEntity> textImagePosts;
+	private PostEntity post;
 
-    @OneToMany(cascade = {CascadeType.PERSIST}, fetch = FetchType.LAZY, mappedBy = "imagePost")
-    private List<TagImagePostEntity> tagImagePosts;
+	@OneToMany(cascade = { CascadeType.PERSIST }, fetch = FetchType.LAZY, mappedBy = "imagePost")
+	private List<TextImagePostEntity> textImagePosts;
+
+	@OneToMany(cascade = { CascadeType.PERSIST }, fetch = FetchType.LAZY, mappedBy = "imagePost")
+	private List<TagImagePostEntity> tagImagePosts;
 }

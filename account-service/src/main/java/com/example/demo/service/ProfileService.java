@@ -3,7 +3,6 @@ package com.example.demo.service;
 import java.util.Optional;
 
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.entity.AccountEntity;
@@ -13,28 +12,33 @@ import com.example.demo.provider.JwtProvider;
 import com.example.demo.repository.AccountRepository;
 import com.example.demo.response.ProfileResponse;
 import com.example.demo.type.DeleteStatusType;
+import com.example.demo.type.ErrorCodeType;
 
 @Service
 public class ProfileService {
-	@Autowired
 	private JwtProvider jwtProvider;
 
-	@Autowired
 	private AccountRepository accountRepository;
+
+	public ProfileService(JwtProvider jwtProvider, AccountRepository accountRepository) {
+		this.jwtProvider = jwtProvider;
+		this.accountRepository = accountRepository;
+	}
 
 	public ProfileResponse getProfileInfoByAccount(Integer profileId, String token) {
 		Integer id = jwtProvider.getAccountIdFromJWT(token);
 		Optional<AccountEntity> accountOpt = accountRepository.findById(id);
 		if (accountOpt.isEmpty())
-			throw new NotFoundException("Your account does not exists");
+			throw new NotFoundException(ErrorCodeType.ERROR_ACCOUNT_NOT_FOUND);
 		AccountEntity account = accountOpt.get();
 		if (account.getStatus() == DeleteStatusType.INACTIVE)
-			throw new BlockException("Your account is blocked. Please contact us to active your account");
-		
+			throw new BlockException(ErrorCodeType.ERROR_ACCOUNT_BLOCKED);
+
 		Optional<AccountEntity> profileOpt = accountRepository.findById(profileId);
-		if(profileOpt.isEmpty()) throw new NotFoundException("Not found profile with id: " + profileId);
+		if (profileOpt.isEmpty())
+			throw new NotFoundException(ErrorCodeType.ERROR_ACCOUNT_SPECIFIC_NOT_FOUND, profileId);
 		AccountEntity profile = profileOpt.get();
-		
+
 		ProfileResponse response = new ProfileResponse();
 		BeanUtils.copyProperties(profile, response);
 		return response;
@@ -42,9 +46,10 @@ public class ProfileService {
 
 	public ProfileResponse getProfileInfoByAnonymous(Integer profileId) {
 		Optional<AccountEntity> profileOpt = accountRepository.findById(profileId);
-		if(profileOpt.isEmpty()) throw new NotFoundException("Not found profile with id: " + profileId);
+		if (profileOpt.isEmpty())
+			throw new NotFoundException(ErrorCodeType.ERROR_ACCOUNT_SPECIFIC_NOT_FOUND, profileId);
 		AccountEntity profile = profileOpt.get();
-		
+
 		ProfileResponse response = new ProfileResponse();
 		BeanUtils.copyProperties(profile, response);
 		return response;

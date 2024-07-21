@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 import com.example.demo.entity.TextImagePostEntity;
 
 @Repository
-public interface TextImagePostRepository extends JpaRepository<TextImagePostEntity, Integer>{
+public interface TextImagePostRepository extends JpaRepository<TextImagePostEntity, Integer> {
 
 }

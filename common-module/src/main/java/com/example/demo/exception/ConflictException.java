@@ -1,10 +1,17 @@
 package com.example.demo.exception;
 
-public class ConflictException extends RuntimeException {
-    private static final long serialVersionUID = 1L;
+import java.text.MessageFormat;
 
-    public ConflictException(String message) {
-        super(message);
+import com.example.demo.type.ErrorCodeType;
+
+public class ConflictException extends RuntimeException {
+
+    public ConflictException(ErrorCodeType code) {
+        super(code.getMessage());
+    }
+
+    public ConflictException(ErrorCodeType code, Object... params) {
+        super(MessageFormat.format(code.getMessage(), params));
     }
 
 }

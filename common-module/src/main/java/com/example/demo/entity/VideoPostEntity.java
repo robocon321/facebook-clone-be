@@ -28,23 +28,23 @@ public class VideoPostEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer videoId;
-	
+
 	private String text;
-	
+
 	@Column(nullable = false)
 	private Timestamp createTime;
-	
+
 	@Column(nullable = false)
 	private Timestamp modTime;
-	
+
 	@Column(nullable = false)
 	private DeleteStatusType status;
-	
+
 	@OneToOne
 	@JoinColumn(nullable = false, name = "file_id")
-	private FileEntity file;	
-	
+	private FileEntity file;
+
 	@ManyToOne
 	@JoinColumn(nullable = false, name = "post_id")
-	private PostEntity post;	
+	private PostEntity post;
 }

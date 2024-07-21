@@ -3,7 +3,6 @@ package com.example.demo.entity;
 import java.sql.Timestamp;
 
 import com.example.demo.type.ActionHistoryStatusType;
-import com.example.demo.type.DeleteStatusType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -36,27 +35,27 @@ public class ActionHistoryEntity {
 	@ManyToOne
 	@JoinColumn(name = "account_id", nullable = false)
 	private AccountEntity account;
-	
+
 	@Column(nullable = false)
 	private Timestamp actionTime;
-	
+
 	@Column(length = 45)
 	private String deviceInfo;
-		
+
 	@Transient
 	private ActionHistoryStatusType status;
-	
+
 	@Column(nullable = false, name = "status", columnDefinition = "CHAR(1)")
 	private Character statusValue;
 
-    @PrePersist
-    @PreUpdate
-    void fillGenderPersistent() {
-        this.statusValue = status.getStatus();
-    }
+	@PrePersist
+	@PreUpdate
+	void fillGenderPersistent() {
+		this.statusValue = status.getStatus();
+	}
 
-    @PostLoad
-    void fillGenderTransient() {
-        this.status = ActionHistoryStatusType.of(statusValue);
-    }	
+	@PostLoad
+	void fillGenderTransient() {
+		this.status = ActionHistoryStatusType.of(statusValue);
+	}
 }

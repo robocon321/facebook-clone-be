@@ -1,5 +1,6 @@
 package com.example.demo.type;
 
+import java.util.Objects;
 import java.util.stream.Stream;
 
 public enum FriendshipStatusType {
@@ -8,9 +9,9 @@ public enum FriendshipStatusType {
 	REJECTED('R'),
 	CANCEL('C'),
 	BLOCK('B');
-	
+
 	private Character status;
-	
+
 	FriendshipStatusType(char status) {
 		this.setStatus(status);
 	}
@@ -22,12 +23,12 @@ public enum FriendshipStatusType {
 	public void setStatus(Character status) {
 		this.status = status;
 	}
-	
-    public static FriendshipStatusType of(Character status) {
-        return Stream.of(FriendshipStatusType.values())
-          .filter(p -> p.getStatus() == status)
-          .findFirst()
-          .orElseThrow(IllegalArgumentException::new);
-    }
+
+	public static FriendshipStatusType of(Character status) {
+		return Stream.of(FriendshipStatusType.values())
+				.filter(p -> Objects.equals(p.getStatus(), status))
+				.findFirst()
+				.orElseThrow(IllegalArgumentException::new);
+	}
 
 }

@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpEntity;
@@ -31,6 +30,7 @@ import com.example.demo.entity.TagImagePostEntity;
 import com.example.demo.entity.TextImagePostEntity;
 import com.example.demo.entity.VideoPostEntity;
 import com.example.demo.exception.BadRequestException;
+import com.example.demo.exception.BlockException;
 import com.example.demo.exception.NotFoundException;
 import com.example.demo.repository.AccountRepository;
 import com.example.demo.repository.CheckinRepository;
@@ -52,38 +52,45 @@ import com.example.demo.response.TagImagePostResponse;
 import com.example.demo.response.TextImagePostResponse;
 import com.example.demo.response.VideoPostResponse;
 import com.example.demo.type.DeleteStatusType;
+import com.example.demo.type.ErrorCodeType;
 import com.example.demo.type.FriendshipStatusType;
+import com.example.demo.utils.ListUtils;
 import com.example.demo.utils.PageableUtils;
 
 @Service
 public class PostService {
-	@Autowired
 	private PostRepository postRepository;
 
-	@Autowired
 	private AccountRepository accountRepository;
 
-	@Autowired
 	private CheckinRepository checkinRepository;
 
-	@Autowired
 	private FriendshipRepository friendshipRepository;
 
-	@Autowired
 	private FileRepository fileRepository;
 
-	@Autowired
 	private RestTemplate restTemplate;
 
-	private String fileUrl = "http://localhost:9090/file";
+	public PostService(PostRepository postRepository, AccountRepository accountRepository,
+			CheckinRepository checkinRepository, FriendshipRepository friendshipRepository,
+			FileRepository fileRepository, RestTemplate restTemplate) {
+		this.postRepository = postRepository;
+		this.accountRepository = accountRepository;
+		this.checkinRepository = checkinRepository;
+		this.friendshipRepository = friendshipRepository;
+		this.fileRepository = fileRepository;
+		this.restTemplate = restTemplate;
+	}
+
+	private static String fileUrl = "http://localhost:9090/file";
 
 	public boolean createPost(CreatePostRequest request, Integer accountId) {
 		Optional<AccountEntity> currentAccountOpt = accountRepository.findById(accountId);
 		AccountEntity account = currentAccountOpt.get();
 
-		Timestamp now = new Timestamp(System.currentTimeMillis());
 		if (account.getStatus() == DeleteStatusType.INACTIVE)
-			throw new NotFoundException("Your account was blocked");
+			throw new BlockException(ErrorCodeType.ERROR_ACCOUNT_BLOCKED);
+		Timestamp now = new Timestamp(System.currentTimeMillis());
 		PostEntity post = PostEntity.builder().text(request.getText()).emotionId(request.getEmotion())
 				.scope(request.getScope()).createTime(now).account(account).modTime(now).status(DeleteStatusType.ACTIVE)
 				.build();
@@ -91,28 +98,25 @@ public class PostService {
 		if (request.getCheckin() != null) {
 			Optional<CheckinEntity> checkinOpt = checkinRepository.findById(request.getCheckin());
 			if (checkinOpt.isEmpty())
-				throw new NotFoundException("CheckinID: " + request.getCheckin() + " not found");
+				throw new NotFoundException(ErrorCodeType.ERROR_CHECKIN_SPECIFIC_NOT_FOUND, request.getCheckin());
 			CheckinEntity checkin = checkinOpt.get();
 
-//			checkin.getPosts().add(post);
 			post.setCheckin(checkin);
 		}
 
 		if (request.getTags() != null) {
 			post.setTags(new ArrayList<>());
-			request.getTags().forEach((item) -> {
+			request.getTags().forEach(item -> {
 				Optional<AccountEntity> tagAccountOpt = accountRepository.findById(item);
 				if (tagAccountOpt.isEmpty())
-					throw new NotFoundException("Tagged AccountID: " + item + " not found");
-				AccountEntity tagAccount = tagAccountOpt.get();
-//				if(tagAccount.getStatus() == DeleteStatusType.INACTIVE) throw new NotFoundException("Tagged AccountID: " + item +" was blocked");
+					throw new NotFoundException(ErrorCodeType.ERROR_TAG_SPECIFIC_NOT_FOUND, item);
 
 				Optional<FriendshipEntity> friendshipOpt = friendshipRepository.customFindByReceiverIdAndSenderId(item,
 						accountId);
 				if (friendshipOpt.isEmpty() || friendshipOpt.get().getStatus() != FriendshipStatusType.ACCEPTED)
-					throw new BadRequestException("Tagged AccountID: " + item + " is not your friend");
+					throw new BadRequestException(ErrorCodeType.ERROR_ACCOUNT_SPECIFIC_NOT_FRIEND, accountId);
 
-//				tagAccount.getTagPosts().add(post);
+				AccountEntity tagAccount = tagAccountOpt.get();
 				post.getTags().add(tagAccount);
 			});
 		}
@@ -120,10 +124,6 @@ public class PostService {
 		if (request.getVideos() != null) {
 			post.setVideoPosts(new ArrayList<>());
 			request.getVideos().forEach(item -> {
-				Timestamp createTime = new Timestamp(item.getCreateTime());
-				VideoPostEntity video = VideoPostEntity.builder().text(item.getNote()).createTime(createTime)
-						.modTime(createTime).status(DeleteStatusType.ACTIVE).build();
-
 				MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
 				body.add("file", item.getFile().getResource());
 				HttpHeaders headers = new HttpHeaders();
@@ -134,18 +134,23 @@ public class PostService {
 				ResponseEntity<FileResponse> response = restTemplate.postForEntity(fileUrl, requestEntity,
 						FileResponse.class);
 				FileResponse fileResponse = response.getBody();
+				if (fileResponse == null)
+					throw new BadRequestException(ErrorCodeType.ERROR_CANNOT_SAVE_FILE, item.getFile().getName());
 				if (response.getStatusCode() == HttpStatus.OK) {
 					Optional<FileEntity> fileOpt = fileRepository.findById(fileResponse.getFileId());
 					if (fileOpt.isEmpty())
-						throw new NotFoundException("Sorry. we cannot save you file");
+						throw new BadRequestException(ErrorCodeType.ERROR_CANNOT_SAVE_FILE, item.getFile().getName());
 					FileEntity file = fileOpt.get();
-					video.setFile(file);
 
+					Timestamp createTime = new Timestamp(item.getCreateTime());
+					VideoPostEntity video = VideoPostEntity.builder().text(item.getNote()).createTime(createTime)
+							.modTime(createTime).status(DeleteStatusType.ACTIVE).build();
+					video.setFile(file);
 					video.setPost(post);
 					post.getVideoPosts().add(video);
 
 				} else {
-					throw new BadRequestException(response.toString());
+					throw new BadRequestException(ErrorCodeType.ERROR_CANNOT_SAVE_FILE, item.getFile().getName());
 				}
 			});
 		}
@@ -160,22 +165,23 @@ public class PostService {
 				if (item.getTags() != null) {
 					image.setTagImagePosts(new ArrayList<>());
 					item.getTags().forEach(tagImageRequest -> {
-						TagImagePostEntity tagImage = TagImagePostEntity.builder().xPos(tagImageRequest.getXPos())
-								.yPos(tagImageRequest.getYPos()).imagePost(image).build();
 
 						Optional<AccountEntity> tagImageAccountOpt = accountRepository
 								.findById(tagImageRequest.getAccountId());
 						if (tagImageAccountOpt.isEmpty())
-							throw new NotFoundException(
-									"Tagged Image AccountID: " + tagImageRequest.getAccountId() + " not found");
-						AccountEntity tagImageAccount = tagImageAccountOpt.get();
-//						if(tagImageAccount.getStatus() == DeleteStatusType.INACTIVE)  throw new NotFoundException("Tagged Image AccountID: " + item + " was blocked");
+							throw new NotFoundException(ErrorCodeType.ERROR_ACCOUNT_SPECIFIC_NOT_FOUND,
+									tagImageRequest.getAccountId());
 
 						Optional<FriendshipEntity> friendshipOpt = friendshipRepository
 								.customFindByReceiverIdAndSenderId(tagImageRequest.getAccountId(), accountId);
 						if (friendshipOpt.isEmpty() || friendshipOpt.get().getStatus() != FriendshipStatusType.ACCEPTED)
-							throw new BadRequestException(
-									"Tagged AccountID: " + tagImageRequest.getAccountId() + " is not your friend");
+							throw new BadRequestException(ErrorCodeType.ERROR_ACCOUNT_SPECIFIC_NOT_FOUND,
+									tagImageRequest.getAccountId());
+
+						TagImagePostEntity tagImage = TagImagePostEntity.builder().xPos(tagImageRequest.getXPos())
+								.yPos(tagImageRequest.getYPos()).imagePost(image).build();
+
+						AccountEntity tagImageAccount = tagImageAccountOpt.get();
 
 						tagImage.setAccount(tagImageAccount);
 						account.getTagImagePosts().add(tagImage);
@@ -208,15 +214,17 @@ public class PostService {
 				ResponseEntity<FileResponse> response = restTemplate.postForEntity(fileUrl, requestEntity,
 						FileResponse.class);
 				FileResponse fileResponse = response.getBody();
+				if (fileResponse == null)
+					throw new NotFoundException(ErrorCodeType.ERROR_CANNOT_SAVE_FILE, item.getFile().getName());
 				if (response.getStatusCode() == HttpStatus.OK) {
 					Optional<FileEntity> fileOpt = fileRepository.findById(fileResponse.getFileId());
 					if (fileOpt.isEmpty())
-						throw new NotFoundException("Sorry. we cannot save you file");
+						throw new NotFoundException(ErrorCodeType.ERROR_CANNOT_SAVE_FILE, item.getFile().getName());
 					FileEntity file = fileOpt.get();
 					image.setFile(file);
 					post.getImagePosts().add(image);
 				} else {
-					throw new BadRequestException(response.toString());
+					throw new NotFoundException(ErrorCodeType.ERROR_CANNOT_SAVE_FILE, item.getFile().getName());
 				}
 				image.setPost(post);
 				post.getImagePosts().add(image);
@@ -253,7 +261,7 @@ public class PostService {
 			postResponse.setCheckin(checkinResponse);
 		}
 
-		if (post.getTags() != null && post.getTags().size() > 0) {
+		if (!ListUtils.isEmpty(post.getTags())) {
 			List<AccountResponse> tagAccountResponses = new ArrayList<>();
 			post.getTags().forEach(item -> {
 				AccountResponse tagAccountResponse = new AccountResponse();
@@ -263,7 +271,7 @@ public class PostService {
 			postResponse.setTags(tagAccountResponses);
 		}
 
-		if (post.getVideoPosts() != null && post.getVideoPosts().size() > 0) {
+		if (!ListUtils.isEmpty(post.getVideoPosts())) {
 			List<VideoPostResponse> videoPostResponses = new ArrayList<>();
 			post.getVideoPosts().forEach(item -> {
 				VideoPostResponse videoPostResponse = new VideoPostResponse();
@@ -276,7 +284,7 @@ public class PostService {
 			postResponse.setVideos(videoPostResponses);
 		}
 
-		if (post.getImagePosts() != null && post.getImagePosts().size() > 0) {
+		if (!ListUtils.isEmpty(post.getImagePosts())) {
 			List<ImagePostResponse> imagePostResponses = new ArrayList<>();
 			post.getImagePosts().forEach(imagePostItem -> {
 				ImagePostResponse imagePostResponse = new ImagePostResponse();
@@ -284,7 +292,7 @@ public class PostService {
 
 				imagePostResponse.setFileUrl(imagePostItem.getFile().getName());
 
-				if (imagePostItem.getTagImagePosts() != null && imagePostItem.getTagImagePosts().size() > 0) {
+				if (!ListUtils.isEmpty(imagePostItem.getTagImagePosts())) {
 					List<TagImagePostResponse> tagImagePostResponses = new ArrayList<>();
 					imagePostItem.getTagImagePosts().forEach(item -> {
 						TagImagePostResponse tagImagePostResponse = new TagImagePostResponse();
@@ -299,7 +307,7 @@ public class PostService {
 					imagePostResponse.setTagImagePosts(tagImagePostResponses);
 				}
 
-				if (imagePostItem.getTextImagePosts() != null && imagePostItem.getTextImagePosts().size() > 0) {
+				if (!ListUtils.isEmpty(imagePostItem.getTextImagePosts())) {
 					List<TextImagePostResponse> textImagePostResponses = new ArrayList<>();
 					imagePostItem.getTextImagePosts().forEach(item -> {
 						TextImagePostResponse textImagePostResponse = new TextImagePostResponse();
@@ -314,7 +322,7 @@ public class PostService {
 			postResponse.setImages(imagePostResponses);
 		}
 
-		if (post.getEmotions().size() > 0) {
+		if (!ListUtils.isEmpty(post.getEmotions())) {
 			List<EmotionPostResponse> responses = post.getEmotions().stream().map(item -> {
 				EmotionPostResponse emotionPostResponse = new EmotionPostResponse();
 				BeanUtils.copyProperties(item, emotionPostResponse);
@@ -326,15 +334,16 @@ public class PostService {
 			}).toList();
 			postResponse.setEmotions(responses);
 		}
-		
-		if(post.getComments().size() > 0) {
-			List<CommentPostResponse> responses = post.getComments().stream().map(item -> mapCommentEntityToDTO(item)).toList();
+
+		if (!ListUtils.isEmpty(post.getComments())) {
+			List<CommentPostResponse> responses = post.getComments().stream().map(this::mapCommentEntityToDTO)
+					.toList();
 			postResponse.setComments(responses);
 		}
 
 		return postResponse;
 	}
-	
+
 	private CommentPostResponse mapCommentEntityToDTO(CommentPostEntity entity) {
 		CommentPostResponse response = new CommentPostResponse();
 		BeanUtils.copyProperties(entity, response);
@@ -364,32 +373,32 @@ public class PostService {
 				int accountMentionId = mentions[i];
 				Optional<AccountEntity> accountMentionOpt = accountRepository.findById(accountMentionId);
 				if (accountMentionOpt.isEmpty())
-					throw new NotFoundException("Mention AccountID: " + accountMentionId);
+					throw new NotFoundException(ErrorCodeType.ERROR_ACCOUNT_SPECIFIC_NOT_FOUND, accountMentionId);
 				AccountEntity accountMention = accountMentionOpt.get();
 				AccountResponse accountMenResponse = new AccountResponse();
 				BeanUtils.copyProperties(accountMention, accountMenResponse);
 				accountResponses.add(accountMenResponse);
 			}
-			
-			response.setMentions(accountResponses);;
+
+			response.setMentions(accountResponses);
 		}
-		
-		if(entity.getEmotions() != null) {
+
+		if (entity.getEmotions() != null) {
 			List<EmotionCommentResponse> emotionCommentResponses = entity.getEmotions().stream().map(item -> {
 				EmotionCommentResponse emotionCommentResponse = new EmotionCommentResponse();
-				BeanUtils.copyProperties(item, emotionCommentResponse);	
-				
+				BeanUtils.copyProperties(item, emotionCommentResponse);
+
 				AccountEntity accountEmotion = item.getAccount();
 				AccountResponse accountEmotionResponse = new AccountResponse();
 				BeanUtils.copyProperties(accountEmotion, accountEmotionResponse);
 				emotionCommentResponse.setAccount(accountResponse);
-				
+
 				return emotionCommentResponse;
 			}).toList();
-			
-			response.setEmotions(emotionCommentResponses);	
+
+			response.setEmotions(emotionCommentResponses);
 		}
-		
+
 		return response;
 	}
 

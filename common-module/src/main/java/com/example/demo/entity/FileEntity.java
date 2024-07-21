@@ -29,16 +29,16 @@ public class FileEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer fileId;
-	
+
 	@Column(nullable = false, columnDefinition = "VARCHAR(100)")
 	private String name;
-	
+
 	@Column(nullable = false)
 	private Timestamp createTime;
-	
+
 	@Column(nullable = false)
 	private Long size;
-	
+
 	@Column(nullable = false, columnDefinition = "VARCHAR(20)")
 	private String type;
 
@@ -48,14 +48,14 @@ public class FileEntity {
 	@Column(nullable = false, name = "status", columnDefinition = "CHAR(1)")
 	private Character statusValue;
 
-    @PrePersist
-    @PreUpdate
-    void fillGenderPersistent() {
-        this.statusValue = status.getStatus();
-    }
+	@PrePersist
+	@PreUpdate
+	void fillGenderPersistent() {
+		this.statusValue = status.getStatus();
+	}
 
-    @PostLoad
-    void fillGenderTransient() {
-        this.status = FileStatusType.of(statusValue);
-    }	
+	@PostLoad
+	void fillGenderTransient() {
+		this.status = FileStatusType.of(statusValue);
+	}
 }

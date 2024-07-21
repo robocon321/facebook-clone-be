@@ -1,42 +1,37 @@
 package com.example.demo.config;
 
-import java.util.Arrays;
-import java.util.List;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.web.server.ServerHttpSecurity;
+import org.springframework.security.config.web.server.ServerHttpSecurity.CsrfSpec;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.security.web.server.SecurityWebFilterChain;
 
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfig {
-	@Bean
-	public UserDetailsService userDetailsService() {
-		return new CustomUserDetailService();
+	private CustomUserDetailService customUserDetailService;
+
+	public WebSecurityConfig(CustomUserDetailService customUserDetailService) {
+		this.customUserDetailService = customUserDetailService;
 	}
 
-	@SuppressWarnings("removal")
 	@Bean
-	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-//		CorsConfiguration config = new CorsConfiguration();
+	public UserDetailsService userDetailsService() {
+		return customUserDetailService;
+	}
 
-//		config.setAllowCredentials(true);
-//		config.setAllowedOrigins(List.of("http://localhost:3000"));
-//		config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
-//		config.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type"));
-
-		return http.csrf().disable().authorizeHttpRequests().requestMatchers("/**").permitAll()
-				.and()
-//				.cors(cors -> cors.configurationSource(request -> config))
+	@Bean
+	public SecurityWebFilterChain securityFilterChain(ServerHttpSecurity http) {
+		return http.csrf(CsrfSpec::disable)
+				.authorizeExchange(
+						exchanges -> exchanges.pathMatchers("/**").permitAll())
 				.build();
 	}
 

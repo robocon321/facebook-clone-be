@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.entity.AccountEntity;
@@ -20,46 +19,50 @@ import com.example.demo.response.AccountResponse;
 import com.example.demo.response.EmotionCommentResponse;
 import com.example.demo.type.DeleteStatusType;
 import com.example.demo.type.EmotionType;
+import com.example.demo.type.ErrorCodeType;
 
 import jakarta.transaction.Transactional;
 
 @Service
 public class EmotionCommentService {
-	@Autowired
 	private EmotionCommentRepository emotionCommentRepository;
 
-	@Autowired
 	private CommentPostRepository commentRepository;
 
-	@Autowired
 	private AccountRepository accountRepository;
+
+	public EmotionCommentService(EmotionCommentRepository emotionCommentRepository,
+			CommentPostRepository commentRepository, AccountRepository accountRepository) {
+		this.emotionCommentRepository = emotionCommentRepository;
+		this.commentRepository = commentRepository;
+		this.accountRepository = accountRepository;
+	}
 
 	@Transactional
 	public EmotionCommentResponse saveEmotionComment(EmotionType type, Integer accountId, Integer commentId) {
-		Timestamp now = new Timestamp(System.currentTimeMillis());
-
-		Optional<EmotionCommentEntity> preMotionOpt = emotionCommentRepository
-				.findByAccountAccountIdAndCommentCommentId(accountId, commentId);
 
 		Optional<CommentPostEntity> commentOpt = commentRepository.findById(commentId);
 		if (commentOpt.isEmpty())
-			throw new NotFoundException("CommentID: " + commentId + " is not found");
-		CommentPostEntity comment = commentOpt.get();
+			throw new NotFoundException(ErrorCodeType.ERROR_COMMENT_SPECIFIC_NOT_FOUND, commentId);
 
 		Optional<AccountEntity> accountOpt = accountRepository.findById(accountId);
 		if (accountOpt.isEmpty())
-			throw new NotFoundException("AccountID: " + accountId + " is not found");
+			throw new NotFoundException(ErrorCodeType.ERROR_ACCOUNT_SPECIFIC_NOT_FOUND, accountId);
 		AccountEntity account = accountOpt.get();
 		if (account.getStatus() == DeleteStatusType.INACTIVE)
-			throw new BlockException("AccountID: " + accountId + " was blocked");
+			throw new BlockException(ErrorCodeType.ERROR_ACCOUNT_SPECIFIC_BLOCKED, accountId);
 
 		EmotionCommentEntity emotion = null;
 
+		Optional<EmotionCommentEntity> preMotionOpt = emotionCommentRepository
+				.findByAccountAccountIdAndCommentCommentId(accountId, commentId);
 		if (preMotionOpt.isPresent()) {
 			emotion = preMotionOpt.get();
 			emotion.setType(type);
 			emotion.setTypeValue(type.getEmotion());
 		} else {
+			CommentPostEntity comment = commentOpt.get();
+			Timestamp now = new Timestamp(System.currentTimeMillis());
 			emotion = EmotionCommentEntity.builder()
 					.createTime(now)
 					.modTime(now)
@@ -82,7 +85,7 @@ public class EmotionCommentService {
 
 	public List<EmotionCommentResponse> getListEmotionByCommentId(Integer commentId) {
 		List<EmotionCommentEntity> emotions = emotionCommentRepository.findByCommentCommentId(commentId);
-		List<EmotionCommentResponse> responses = emotions.stream().map(item -> {
+		return emotions.stream().map(item -> {
 			EmotionCommentResponse response = new EmotionCommentResponse();
 			BeanUtils.copyProperties(item, response);
 
@@ -91,7 +94,6 @@ public class EmotionCommentService {
 			response.setAccount(accountResponse);
 			return response;
 		}).toList();
-		return responses;
 	}
 
 	public void deleteEmotion(Integer accountId, Integer commentId) {

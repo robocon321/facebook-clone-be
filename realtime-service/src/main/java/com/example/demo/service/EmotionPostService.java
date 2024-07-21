@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.entity.AccountEntity;
@@ -20,46 +19,50 @@ import com.example.demo.response.AccountResponse;
 import com.example.demo.response.EmotionPostResponse;
 import com.example.demo.type.DeleteStatusType;
 import com.example.demo.type.EmotionType;
+import com.example.demo.type.ErrorCodeType;
 
 import jakarta.transaction.Transactional;
 
 @Service
 public class EmotionPostService {
-	@Autowired
 	private EmotionPostRepository emotionPostRepository;
 
-	@Autowired
 	private PostRepository postRepository;
 
-	@Autowired
 	private AccountRepository accountRepository;
+
+	public EmotionPostService(EmotionPostRepository emotionPostRepository, PostRepository postRepository,
+			AccountRepository accountRepository) {
+		this.emotionPostRepository = emotionPostRepository;
+		this.postRepository = postRepository;
+		this.accountRepository = accountRepository;
+	}
 
 	@Transactional
 	public EmotionPostResponse saveEmotionPost(EmotionType type, Integer accountId, Integer postId) {
-		Timestamp now = new Timestamp(System.currentTimeMillis());
-
-		Optional<EmotionPostEntity> preMotionOpt = emotionPostRepository.findByAccountAccountIdAndPostPostId(accountId,
-				postId);
 
 		Optional<PostEntity> postOpt = postRepository.findById(postId);
 		if (postOpt.isEmpty())
-			throw new NotFoundException("PostID: " + postId + " is not found");
-		PostEntity post = postOpt.get();
+			throw new NotFoundException(ErrorCodeType.ERROR_POST_SPECIFIC_NOT_FOUND, postId);
 
 		Optional<AccountEntity> accountOpt = accountRepository.findById(accountId);
 		if (accountOpt.isEmpty())
-			throw new NotFoundException("AccountID: " + accountId + " is not found");
+			throw new NotFoundException(ErrorCodeType.ERROR_ACCOUNT_SPECIFIC_NOT_FOUND, accountId);
 		AccountEntity account = accountOpt.get();
 		if (account.getStatus() == DeleteStatusType.INACTIVE)
-			throw new BlockException("AccountID: " + accountId + " was blocked");
+			throw new BlockException(ErrorCodeType.ERROR_ACCOUNT_SPECIFIC_BLOCKED, accountId);
 
 		EmotionPostEntity emotion = null;
 
+		Optional<EmotionPostEntity> preMotionOpt = emotionPostRepository.findByAccountAccountIdAndPostPostId(accountId,
+				postId);
 		if (preMotionOpt.isPresent()) {
 			emotion = preMotionOpt.get();
 			emotion.setType(type);
 			emotion.setTypeValue(type.getEmotion());
 		} else {
+			PostEntity post = postOpt.get();
+			Timestamp now = new Timestamp(System.currentTimeMillis());
 			emotion = EmotionPostEntity.builder().createTime(now).modTime(now).status(DeleteStatusType.ACTIVE)
 					.type(type).post(post)
 					.account(account).build();
@@ -78,7 +81,7 @@ public class EmotionPostService {
 
 	public List<EmotionPostResponse> getListEmotionByPostId(Integer postId) {
 		List<EmotionPostEntity> emotions = emotionPostRepository.findByPostPostId(postId);
-		List<EmotionPostResponse> responses = emotions.stream().map(item -> {
+		return emotions.stream().map(item -> {
 			EmotionPostResponse response = new EmotionPostResponse();
 			BeanUtils.copyProperties(item, response);
 
@@ -87,7 +90,6 @@ public class EmotionPostService {
 			response.setAccount(accountResponse);
 			return response;
 		}).toList();
-		return responses;
 	}
 
 	public void deleteEmotion(Integer accountId, Integer postId) {

@@ -1,12 +1,13 @@
 package com.example.demo.type;
 
+import java.util.Objects;
 import java.util.stream.Stream;
 
 public enum GenderType {
 	MALE('M'),
 	FEMALE('F'),
 	OTHER('O');
-	
+
 	private Character gender;
 
 	GenderType(char gender) {
@@ -20,11 +21,11 @@ public enum GenderType {
 	public void setGender(Character gender) {
 		this.gender = gender;
 	}
-	
-    public static GenderType of(Character gender) {
-        return Stream.of(GenderType.values())
-          .filter(p -> p.getGender() == gender)
-          .findFirst()
-          .orElseThrow(IllegalArgumentException::new);
-    }
+
+	public static GenderType of(Character gender) {
+		return Stream.of(GenderType.values())
+				.filter(p -> Objects.equals(p.getGender(), gender))
+				.findFirst()
+				.orElseThrow(IllegalArgumentException::new);
+	}
 }

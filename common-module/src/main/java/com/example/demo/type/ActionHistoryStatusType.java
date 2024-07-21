@@ -1,5 +1,6 @@
 package com.example.demo.type;
 
+import java.util.Objects;
 import java.util.stream.Stream;
 
 public enum ActionHistoryStatusType {
@@ -8,13 +9,13 @@ public enum ActionHistoryStatusType {
 	LOGIN('L'),
 	LOGOUT('U'),
 	REGISTER('R');
-	
+
 	private Character status;
-	
+
 	ActionHistoryStatusType(char status) {
 		this.status = status;
 	}
-	
+
 	public Character getStatus() {
 		return status;
 	}
@@ -22,13 +23,12 @@ public enum ActionHistoryStatusType {
 	public void setStatus(Character status) {
 		this.status = status;
 	}
-	
-    public static ActionHistoryStatusType of(Character status) {
-        return Stream.of(ActionHistoryStatusType.values())
-          .filter(p -> p.getStatus() == status)
-          .findFirst()
-          .orElseThrow(IllegalArgumentException::new);
-    }
 
-	
+	public static ActionHistoryStatusType of(Character status) {
+		return Stream.of(ActionHistoryStatusType.values())
+				.filter(p -> Objects.equals(p.getStatus(), status))
+				.findFirst()
+				.orElseThrow(IllegalArgumentException::new);
+	}
+
 }
