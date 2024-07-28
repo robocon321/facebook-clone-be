@@ -107,25 +107,36 @@ if [ $? -eq 1 ]; then
     exit 1;
 fi
 
-echo -e "${WARNING}Build post-service image${RESET}"
+echo -e "${WARNING}Build comment-service image${RESET}"
 cd ..
-cd post-service
-docker_build_command="sudo docker build -t robocon321/post-service:latest ."
+cd comment-service
+docker_build_command="sudo docker build -t robocon321/comment-service:latest ."
 $docker_build_command
 
 if [ $? -eq 1 ]; then
-    echo -e "${ERROR}Build post-service fail${RESET}"
+    echo -e "${ERROR}Build comment-service fail${RESET}"
     exit 1;
 fi
 
-echo -e "${WARNING}Build realtime-service image${RESET}"
+echo -e "${WARNING}Build article-service image${RESET}"
 cd ..
-cd realtime-service
-docker_build_command="sudo docker build -t robocon321/realtime-service:latest ."
+cd article-service
+docker_build_command="sudo docker build -t robocon321/article-service:latest ."
 $docker_build_command
 
 if [ $? -eq 1 ]; then
-    echo -e "${ERROR}Build realtime-service fail${RESET}"
+    echo -e "${ERROR}Build article-service fail${RESET}"
+    exit 1;
+fi
+
+echo -e "${WARNING}Build friend-service image${RESET}"
+cd ..
+cd friend-service
+docker_build_command="sudo docker build -t robocon321/friend-service:latest ."
+$docker_build_command
+
+if [ $? -eq 1 ]; then
+    echo -e "${ERROR}Build friend-service fail${RESET}"
     exit 1;
 fi
 
@@ -141,8 +152,8 @@ sudo docker image push robocon321/coverage-report:latest
 sudo docker image push robocon321/discovery-server:latest
 sudo docker image push robocon321/file-service:latest
 sudo docker image push robocon321/location-service:latest
-sudo docker image push robocon321/post-service:latest
-sudo docker image push robocon321/realtime-service:latest
+sudo docker image push robocon321/article-service:latest
+sudo docker image push robocon321/friend-service:latest
 
 echo -e "${WARNING}Run file docker-compose to start system${RESET}"
 sudo docker compose -f docker-compose/docker-compose.yml up -d

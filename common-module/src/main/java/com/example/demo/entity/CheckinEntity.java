@@ -42,5 +42,5 @@ public class CheckinEntity {
 	private String address;
 
 	@OneToMany(mappedBy = "checkin", fetch = FetchType.LAZY)
-	private List<PostEntity> posts;
+	private List<ArticleEntity> articles;
 }

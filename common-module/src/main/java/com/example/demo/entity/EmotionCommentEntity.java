@@ -35,7 +35,7 @@ public class EmotionCommentEntity {
 
 	@ManyToOne
 	@JoinColumn(name = "comment_id", nullable = false)
-	private CommentPostEntity comment;
+	private CommentArticleEntity comment;
 
 	@ManyToOne
 	@JoinColumn(name = "account_id", nullable = false)

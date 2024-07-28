@@ -27,7 +27,7 @@ pipeline {
             steps {
                 sh 'mvn clean install -DskipTests'
             }
-            post {
+            article {
                 success {
                     echo 'Now Archiving...'
                     archiveArtifacts artifacts: '**/target/*.jar'
@@ -51,7 +51,7 @@ pipeline {
             steps {
                 sh 'mvn checkstyle:checkstyle'
             }
-            post {
+            article {
                 success {
                     echo 'Generated Analysis Result'
                 }
@@ -83,7 +83,7 @@ pipeline {
                 }
             }
             
-            post {
+            article {
                 failure {
                     catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                         echo "Stage timed out but continuing..."
@@ -117,7 +117,7 @@ pipeline {
                 }
             }
             
-            post {
+            article {
                 failure {
                     catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                         echo "Stage timed out but continuing..."
@@ -177,7 +177,7 @@ pipeline {
                 }
             }
 
-            post {
+            article {
                 failure {
                     catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                         echo "Stage timed out but continuing..."
@@ -211,7 +211,7 @@ pipeline {
                 }
             }
 
-            post {
+            article {
                 failure {
                     catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                         echo "Stage timed out but continuing..."
@@ -245,7 +245,7 @@ pipeline {
                 }
             }
 
-            post {
+            article {
                 failure {
                     catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                         echo "Stage timed out but continuing..."
@@ -254,7 +254,7 @@ pipeline {
             }
         }
 
-        stage('POST SERVICE CODE ANALYSIS WITH SONARQUBE') {
+        stage('ARTICLE SERVICE CODE ANALYSIS WITH SONARQUBE') {
           
             environment {
                 scannerHome = tool "${SONARSCANNER}"
@@ -263,14 +263,14 @@ pipeline {
             steps {
                 script {
                     withSonarQubeEnv("${SONARSERVER}") {
-                        def scanner = sh(script: '''${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=facebook-clone-PostService-be \
-                            -Dsonar.projectName=facebook-clone-PostService-repo \
+                        def scanner = sh(script: '''${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=facebook-clone-ArticleService-be \
+                            -Dsonar.projectName=facebook-clone-ArticleService-repo \
                             -Dsonar.projectVersion=1.0 \
-                            -Dsonar.sources=post-service/src/ \
-                            -Dsonar.java.binaries=post-service/target/test-classes/com/example/demo/ \
-                            -Dsonar.junit.reportsPath=post-service/target/surefire-reports/ \
-                            -Dsonar.jacoco.reportsPath=post-service/target/jacoco.exec \
-                            -Dsonar.java.checkstyle.reportPaths=post-service/target/checkstyle-result.xml''', returnStatus: true)
+                            -Dsonar.sources=article-service/src/ \
+                            -Dsonar.java.binaries=article-service/target/test-classes/com/example/demo/ \
+                            -Dsonar.junit.reportsPath=article-service/target/surefire-reports/ \
+                            -Dsonar.jacoco.reportsPath=article-service/target/jacoco.exec \
+                            -Dsonar.java.checkstyle.reportPaths=article-service/target/checkstyle-result.xml''', returnStatus: true)
                         
                         if (scanner != 0) {
                             error("SonarQube analysis failed")
@@ -279,7 +279,7 @@ pipeline {
                 }
             }
 
-            post {
+            article {
                 failure {
                     catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                         echo "Stage timed out but continuing..."
@@ -288,7 +288,7 @@ pipeline {
             }
         }
 
-        stage('REALTIME SERVICE CODE ANALYSIS WITH SONARQUBE') {
+        stage('FRIEND SERVICE CODE ANALYSIS WITH SONARQUBE') {
           
             environment {
                 scannerHome = tool "${SONARSCANNER}"
@@ -297,14 +297,14 @@ pipeline {
             steps {
                 script {
                     withSonarQubeEnv("${SONARSERVER}") {
-                        def scanner = sh(script: '''${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=facebook-clone-RealtimeService-be \
-                            -Dsonar.projectName=facebook-clone-RealtimeService-repo \
+                        def scanner = sh(script: '''${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=facebook-clone-FriendService-be \
+                            -Dsonar.projectName=facebook-clone-FriendService-repo \
                             -Dsonar.projectVersion=1.0 \
-                            -Dsonar.sources=realtime-service/src/ \
-                            -Dsonar.java.binaries=realtime-service/target/test-classes/com/example/demo/ \
-                            -Dsonar.junit.reportsPath=realtime-service/target/surefire-reports/ \
-                            -Dsonar.jacoco.reportsPath=realtime-service/target/jacoco.exec \
-                            -Dsonar.java.checkstyle.reportPaths=realtime-service/target/checkstyle-result.xml''', returnStatus: true)
+                            -Dsonar.sources=friend-service/src/ \
+                            -Dsonar.java.binaries=friend-service/target/test-classes/com/example/demo/ \
+                            -Dsonar.junit.reportsPath=friend-service/target/surefire-reports/ \
+                            -Dsonar.jacoco.reportsPath=friend-service/target/jacoco.exec \
+                            -Dsonar.java.checkstyle.reportPaths=friend-service/target/checkstyle-result.xml''', returnStatus: true)
                         
                         if (scanner != 0) {
                             error("SonarQube analysis failed")
@@ -313,7 +313,41 @@ pipeline {
                 }
             }
 
-            post {
+            article {
+                failure {
+                    catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                        echo "Stage timed out but continuing..."
+                    }
+                }
+            }
+        }
+
+        stage('COMMENT SERVICE CODE ANALYSIS WITH SONARQUBE') {
+          
+            environment {
+                scannerHome = tool "${SONARSCANNER}"
+            }
+
+            steps {
+                script {
+                    withSonarQubeEnv("${SONARSERVER}") {
+                        def scanner = sh(script: '''${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=facebook-clone-CommentService-be \
+                            -Dsonar.projectName=facebook-clone-CommentService-repo \
+                            -Dsonar.projectVersion=1.0 \
+                            -Dsonar.sources=comment-service/src/ \
+                            -Dsonar.java.binaries=comment-service/target/test-classes/com/example/demo/ \
+                            -Dsonar.junit.reportsPath=comment-service/target/surefire-reports/ \
+                            -Dsonar.jacoco.reportsPath=comment-service/target/jacoco.exec \
+                            -Dsonar.java.checkstyle.reportPaths=comment-service/target/checkstyle-result.xml''', returnStatus: true)
+                        
+                        if (scanner != 0) {
+                            error("SonarQube analysis failed")
+                        }
+                    }
+                }
+            }
+
+            article {
                 failure {
                     catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                         echo "Stage timed out but continuing..."
@@ -338,7 +372,7 @@ pipeline {
                     }
                 }    
             }
-            post {
+            article {
                 failure {
                     catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                         echo "Stage timed out but continuing..."
@@ -394,14 +428,19 @@ pipeline {
                      file: 'location-service/target/location-service-0.0.1-SNAPSHOT.jar',
                      type: 'jar'],
 
-                    [artifactId: 'post-service',
+                    [artifactId: 'article-service',
                      classifier: '',
-                     file: 'post-service/target/post-service-0.0.1-SNAPSHOT.jar',
+                     file: 'article-service/target/article-service-0.0.1-SNAPSHOT.jar',
                      type: 'jar'],
 
-                    [artifactId: 'realtime-service',
+                    [artifactId: 'friend-service',
                      classifier: '',
-                     file: 'realtime-service/target/realtime-service-0.0.1-SNAPSHOT.jar',
+                     file: 'friend-service/target/friend-service-0.0.1-SNAPSHOT.jar',
+                     type: 'jar'],
+
+                    [artifactId: 'comment-service',
+                     classifier: '',
+                     file: 'comment-service/target/comment-service-0.0.1-SNAPSHOT.jar',
                      type: 'jar'],
                   ]
                 )

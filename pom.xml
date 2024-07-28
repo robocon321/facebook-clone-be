@@ -22,8 +22,9 @@
 		<module>coverage-report</module>
 		<module>file-service</module>
 		<module>location-service</module>
-		<module>post-service</module>
-		<module>realtime-service</module>
+		<module>article-service</module>
+		<module>comment-service</module>
+		<module>friend-service</module>
 	</modules>
 	<build>
 		<plugins>

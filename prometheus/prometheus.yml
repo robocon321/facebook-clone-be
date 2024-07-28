@@ -1,5 +1,5 @@
 global:
-  scrape_interval:     10s
+  scrape_interval: 10s
   evaluation_interval: 10s
 
 # Alertmanager configuration
@@ -15,59 +15,65 @@ rule_files:
   # - "second_rules.yml"
 
 scrape_configs:
-  - job_name: 'discovery-server'
-    metrics_path: '/actuator/prometheus'
+  - job_name: "discovery-server"
+    metrics_path: "/actuator/prometheus"
     static_configs:
-      - targets: ['discovery-server:9091']
+      - targets: ["discovery-server:9091"]
         labels:
-          application: 'Discovery Server Application'
+          application: "Discovery Server Application"
 
-  - job_name: 'api-gateway'
-    metrics_path: '/actuator/prometheus'
+  - job_name: "api-gateway"
+    metrics_path: "/actuator/prometheus"
     static_configs:
-      - targets: ['api-gateway:9090']
+      - targets: ["api-gateway:9090"]
         labels:
-          application: 'Api Gateway Application'
+          application: "Api Gateway Application"
 
-  - job_name: 'account-service'
-    metrics_path: '/actuator/prometheus'
+  - job_name: "account-service"
+    metrics_path: "/actuator/prometheus"
     static_configs:
-      - targets: ['account-service:9001']
+      - targets: ["account-service:9001"]
         labels:
-          application: 'Account Service Application'
-          
-  - job_name: 'auth-service'
-    metrics_path: '/actuator/prometheus'
-    static_configs:
-      - targets: ['auth-service:9002']
-        labels:
-          application: 'Auth Service Application'
+          application: "Account Service Application"
 
-  - job_name: 'file-service'
-    metrics_path: '/actuator/prometheus'
+  - job_name: "auth-service"
+    metrics_path: "/actuator/prometheus"
     static_configs:
-      - targets: ['file-service:9003']
+      - targets: ["auth-service:9002"]
         labels:
-          application: 'File Service Application'
+          application: "Auth Service Application"
 
-  - job_name: 'location-service'
-    metrics_path: '/actuator/prometheus'
+  - job_name: "file-service"
+    metrics_path: "/actuator/prometheus"
     static_configs:
-      - targets: ['location-service:9004']
+      - targets: ["file-service:9003"]
         labels:
-          application: 'Location Service Application'
+          application: "File Service Application"
 
-  - job_name: 'post-service'
-    metrics_path: '/actuator/prometheus'
+  - job_name: "location-service"
+    metrics_path: "/actuator/prometheus"
     static_configs:
-      - targets: ['post-service:9005']
+      - targets: ["location-service:9004"]
         labels:
-          application: 'Post Service Application'
-          
-  - job_name: 'realtime-service'
-    metrics_path: '/actuator/prometheus'
+          application: "Location Service Application"
+
+  - job_name: "article-service"
+    metrics_path: "/actuator/prometheus"
     static_configs:
-      - targets: ['realtime-service:9006']
+      - targets: ["article-service:9005"]
         labels:
-          application: 'Realtime Service Application'
-          
+          application: "Article Service Application"
+
+  - job_name: "friend-service"
+    metrics_path: "/actuator/prometheus"
+    static_configs:
+      - targets: ["friend-service:9006"]
+        labels:
+          application: "Friend Service Application"
+
+  - job_name: "comment-service"
+    metrics_path: "/actuator/prometheus"
+    static_configs:
+      - targets: ["comment-service:9006"]
+        labels:
+          application: "Comment Service Application"

@@ -33,7 +33,8 @@ public class SecurityConfig {
 
 		return http.csrf(CsrfSpec::disable)
 				.authorizeExchange(
-						exchanges -> exchanges.pathMatchers("/account/**", "/friendship/**", "/post/**").authenticated()
+						exchanges -> exchanges.pathMatchers("/account/**", "/friendship/**", "/article/**")
+								.authenticated()
 								.anyExchange().permitAll())
 				.cors(cors -> cors.configurationSource(request -> config))
 				// .cors().disable()

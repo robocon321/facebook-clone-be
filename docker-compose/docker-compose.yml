@@ -240,10 +240,10 @@ services:
       ZIPKIN_HOST: ${ZIPKIN_HOST}
       DISCOVERYSERVER_HOST: ${DISCOVERYSERVER_HOST}
 
-  ## Post-Service Docker Compose Config
-  post-service:
-    container_name: post-service
-    image: robocon321/post-service:latest
+  ## Article-Service Docker Compose Config
+  article-service:
+    container_name: article-service
+    image: robocon321/article-service:latest
     ports:
       - "9005:9005"
     depends_on:
@@ -259,7 +259,7 @@ services:
       file: common-config.yml
       service: microservice-base-config
     environment:
-      SERVER_NAME: "post-service"
+      SERVER_NAME: "article-service"
       DB_PROTOCOL: ${DB_PROTOCOL}
       DB_HOST: ${DB_HOST}
       DB_PORT: ${DB_PORT}
@@ -275,10 +275,45 @@ services:
       ZIPKIN_HOST: ${ZIPKIN_HOST}
       DISCOVERYSERVER_HOST: ${DISCOVERYSERVER_HOST}
 
-  ## Realtime-Service Docker Compose Config
-  realtime-service:
-    container_name: realtime-service
-    image: robocon321/realtime-service:latest
+  ## Comment-Service Docker Compose Config
+  comment-service:
+    container_name: comment-service
+    image: robocon321/comment-service:latest
+    ports:
+      - "9007:9007"
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+    healthcheck:
+      test: "curl --fail --silent http://localhost:9006/actuator/health | grep UP || exit 1"
+      interval: 20s
+      timeout: 5s
+      retries: 3
+      start_interval: 10s
+    extends:
+      file: common-config.yml
+      service: microservice-base-config
+    environment:
+      SERVER_NAME: "comment-service"
+      DB_PROTOCOL: ${DB_PROTOCOL}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_DATABASE: ${DB_DATABASE}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_DRIVER: ${DB_DRIVER}
+      DB_HIBERNATE_DIALECT: ${DB_HIBERNATE_DIALECT}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRE: ${JWT_EXPIRE}
+      SPRING_SECURITY_USERNAME: ${SPRING_SECURITY_USERNAME}
+      SPRING_SECURITY_PASSWORD: ${SPRING_SECURITY_PASSWORD}
+      ZIPKIN_HOST: ${ZIPKIN_HOST}
+      DISCOVERYSERVER_HOST: ${DISCOVERYSERVER_HOST}
+
+  ## Friend-Service Docker Compose Config
+  friend-service:
+    container_name: friend-service
+    image: robocon321/friend-service:latest
     ports:
       - "9006:9006"
     depends_on:
@@ -294,7 +329,7 @@ services:
       file: common-config.yml
       service: microservice-base-config
     environment:
-      SERVER_NAME: "realtime-service"
+      SERVER_NAME: "friend-service"
       DB_PROTOCOL: ${DB_PROTOCOL}
       DB_HOST: ${DB_HOST}
       DB_PORT: ${DB_PORT}

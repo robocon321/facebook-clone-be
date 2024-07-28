@@ -16,6 +16,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.PostLoad;
+import jakarta.persistence.PostLoad;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
@@ -102,16 +103,16 @@ public class AccountEntity implements Serializable {
 	private List<FriendshipEntity> receiver;
 
 	@ManyToMany(mappedBy = "tags", fetch = FetchType.LAZY)
-	private List<PostEntity> tagPosts;
+	private List<ArticleEntity> tagArticles;
 
 	@OneToMany(mappedBy = "account", fetch = FetchType.LAZY)
-	private List<TagImagePostEntity> tagImagePosts;
+	private List<TagImageArticleEntity> tagImageArticles;
 
 	@OneToMany(mappedBy = "account", fetch = FetchType.LAZY)
-	private List<CommentPostEntity> comments;
+	private List<CommentArticleEntity> comments;
 
 	@OneToMany(mappedBy = "account", fetch = FetchType.LAZY)
-	private List<EmotionPostEntity> emotionPosts;
+	private List<EmotionArticleEntity> emotionArticles;
 
 	@OneToMany(mappedBy = "account", fetch = FetchType.LAZY)
 	private List<EmotionCommentEntity> emotionComments;

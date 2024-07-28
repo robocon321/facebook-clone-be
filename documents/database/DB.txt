@@ -27,8 +27,8 @@ Table action_history {
 Ref: action_history.account_id > account.account_id
 
 
-Table post {
-  post_id int [primary key]
+Table article {
+  article_id int [primary key]
   account_id int [not null]
   text varchar
   emotion_id int
@@ -38,66 +38,66 @@ Table post {
   mod_time datetime [not null]
   status char(1) [not null]
 }
-Ref: post.account_id > account.account_id
-Ref: post.checkin_id > checkin.checkin_id
+Ref: article.account_id > account.account_id
+Ref: article.checkin_id > checkin.checkin_id
 
 
-Table tag_post {
+Table tag_article {
   tag_id int [primary key]
   account_id int [not null]
-  post_id int [not null]
+  article_id int [not null]
 }
-Ref: tag_post.account_id > account.account_id
-Ref: tag_post.post_id > post.post_id
+Ref: tag_article.account_id > account.account_id
+Ref: tag_article.article_id > article.article_id
 
 
-Table image_post {
-  image_post_id int [primary key]
-  post_id int [not null]
+Table image_article {
+  image_article_id int [primary key]
+  article_id int [not null]
   file_id int [not null]  
   text int
   create_time datetime [not null]
   mod_time datetime [not null]
   status char(1) [not null]
 }
-Ref: image_post.image_post_id > post.post_id
-Ref: image_post.file_id > file_management.file_id
+Ref: image_article.image_article_id > article.article_id
+Ref: image_article.file_id > file_management.file_id
 
 
-Table text_image_post {
+Table text_image_article {
   text_id int [primary key]
-  image_post_id int [not null]
+  image_article_id int [not null]
   text string [not null]
   x_pos double [not null]
   y_pos double [not null]
   color char(2) [not null]
   size double [not null]
 }
-Ref: text_image_post.image_post_id > image_post.image_post_id
+Ref: text_image_article.image_article_id > image_article.image_article_id
 
 
-Table tag_image_post {
+Table tag_image_article {
   tag_id int [primary key]
-  image_post_id int [not null]
+  image_article_id int [not null]
   account_id int [not null]
   x_pos double [not null]
   y_pos double [not null]
 }
-Ref: tag_image_post.image_post_id > image_post.image_post_id
-Ref: tag_image_post.account_id > account.account_id
+Ref: tag_image_article.image_article_id > image_article.image_article_id
+Ref: tag_image_article.account_id > account.account_id
 
 
-Table video_post {
+Table video_article {
   video_id int [primary key]
-  post_id int [not null]
+  article_id int [not null]
   file_id int [not null]
   text int
   create_time datetime [not null]
   mod_time datetime [not null]
   status char(1) [not null]  
 }
-Ref: video_post.post_id > post.post_id
-Ref: video_post.file_id > file_management.file_id
+Ref: video_article.article_id > article.article_id
+Ref: video_article.file_id > file_management.file_id
 
 
 Table friendship {
@@ -132,7 +132,7 @@ Table file_management {
 
 Table comment {
   comment_id int [primary key]
-  post_id int [not null]
+  article_id int [not null]
   account_id int [not null]
   text nvarchar(1000)
   mentioned_accounts varchar(100)
@@ -142,13 +142,13 @@ Table comment {
   status char(1) [not null]
 }
 
-Ref: comment.post_id > post.post_id
+Ref: comment.article_id > article.article_id
 Ref: comment.account_id > account.account_id
 Ref: comment.parent_id > comment.comment_id
 
-Table emotion_post {
+Table emotion_article {
   emotion_id int [primary key]
-  post_id int [not null]
+  article_id int [not null]
   account_id int [not null]
   type char(1) [not null]
   create_time timestamp [not null]
@@ -156,8 +156,8 @@ Table emotion_post {
   status char(1) [not null]
 }
 
-Ref: emotion_post.post_id > post.post_id
-Ref: emotion_post.account_id > account.account_id
+Ref: emotion_article.article_id > article.article_id
+Ref: emotion_article.account_id > account.account_id
 
 
 Table emotion_comment {
