@@ -20,8 +20,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void configureMessageBroker(@NonNull MessageBrokerRegistry config) {
         config.enableSimpleBroker("/friend-topic");
-        config.setApplicationDestinationPrefixes("/friend-app", "/friend-user");
-        config.setUserDestinationPrefix("/friend-user");
+        config.setApplicationDestinationPrefixes("/friend-app", "/user");
+        config.setUserDestinationPrefix("/user");
     }
 
     @Override

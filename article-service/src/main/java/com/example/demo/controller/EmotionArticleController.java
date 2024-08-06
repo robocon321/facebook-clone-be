@@ -51,7 +51,7 @@ public class EmotionArticleController {
 		Integer accountId = userSessions.get(articleId).get(headerAccessor.getSessionId());
 		emotionArticleService.saveEmotionArticle(emotionType, accountId, articleId);
 		List<EmotionArticleResponse> responses = emotionArticleService.getListEmotionByArticleId(articleId);
-		this.simpMessagingTemplate.convertAndSend("/topic/emotion-article/" + articleId, responses);
+		this.simpMessagingTemplate.convertAndSend("/article-topic/emotion/" + articleId, responses);
 	}
 
 	@MessageMapping("/emotion-article/delete/{articleId}")
@@ -59,7 +59,7 @@ public class EmotionArticleController {
 		Integer accountId = userSessions.get(articleId).get(headerAccessor.getSessionId());
 		emotionArticleService.deleteEmotion(accountId, articleId);
 		List<EmotionArticleResponse> responses = emotionArticleService.getListEmotionByArticleId(articleId);
-		this.simpMessagingTemplate.convertAndSend("/topic/emotion-article/" + articleId, responses);
+		this.simpMessagingTemplate.convertAndSend("/article-topic/emotion/" + articleId, responses);
 	}
 
 	@EventListener
@@ -69,7 +69,7 @@ public class EmotionArticleController {
 		List<String> destinations = headerAccessor.getNativeHeader("destination");
 		if (destinations != null) {
 			String destination = destinations.get(0);
-			if (destination.startsWith("/topic/emotion-article/")) {
+			if (destination.startsWith("/article-topic/emotion/")) {
 				String[] destinationSplit = destination.split("/");
 				Integer articleId = Integer.parseInt(destinationSplit[destinationSplit.length - 1]);
 
@@ -88,7 +88,7 @@ public class EmotionArticleController {
 		StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
 
 		String destination = headerAccessor.getDestination();
-		if (destination != null && destination.startsWith("/topic/emotion-article/")) {
+		if (destination != null && destination.startsWith("/article-topic/emotion/")) {
 			String senderSession = headerAccessor.getSessionId();
 			List<String> tokens = headerAccessor.getNativeHeader("token");
 			if (tokens != null) {

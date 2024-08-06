@@ -65,7 +65,7 @@ public class CommentArticleController {
 			commentArticleService.createComment(request, accountId);
 			List<CommentArticleResponse> commentArticleResponses = commentArticleService
 					.getAllCommentByArticle(request.getArticleId());
-			simpMessagingTemplate.convertAndSend("/topic/comment-article/create/" + request.getArticleId(),
+			simpMessagingTemplate.convertAndSend("/comment-topic/article/create/" + request.getArticleId(),
 					commentArticleResponses);
 		}
 	}
@@ -85,7 +85,7 @@ public class CommentArticleController {
 			for (Entry<String, Integer> entry : userCommentArticleSessions.get(articleId).entrySet()) {
 				if (!entry.getKey().equals(senderSession)) {
 					this.simpMessagingTemplate.convertAndSendToUser(entry.getKey(),
-							"/topic/comment-article/check-focus/" + articleId, setFocus.size());
+							"/comment-topic/article/check-focus/" + articleId, setFocus.size());
 				}
 			}
 
@@ -99,7 +99,7 @@ public class CommentArticleController {
 		List<String> destinations = headerAccessor.getNativeHeader("destination");
 		if (destinations != null) {
 			String destination = destinations.get(0);
-			if (destination.startsWith("/user/topic/comment-article/check-focus")) {
+			if (destination.startsWith("/user/comment-topic/article/check-focus")) {
 				String[] destinationSplit = destination.split("/");
 				Integer articleId = Integer.parseInt(destinationSplit[destinationSplit.length - 1]);
 
@@ -117,7 +117,7 @@ public class CommentArticleController {
 		StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
 
 		String destination = headerAccessor.getDestination();
-		if (destination != null && destination.startsWith("/user/topic/comment-article/check-focus")) {
+		if (destination != null && destination.startsWith("/user/comment-topic/article/check-focus")) {
 			String senderSession = headerAccessor.getSessionId();
 			List<String> tokens = headerAccessor.getNativeHeader("token");
 			if (tokens != null) {

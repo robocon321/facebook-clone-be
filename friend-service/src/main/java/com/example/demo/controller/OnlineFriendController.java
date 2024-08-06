@@ -43,7 +43,7 @@ public class OnlineFriendController {
 			for (Entry<String, Integer> entry : userCommentArticleSessions.entrySet()) {
 				if (entry.getValue().equals(item)) {
 					OnlineFriendResponse response = new OnlineFriendResponse(true, senderId);
-					simpMessagingTemplate.convertAndSendToUser(entry.getKey(), "/topic/online-friend", response);
+					simpMessagingTemplate.convertAndSendToUser(entry.getKey(), "/friend-topic/online-friend", response);
 				}
 			}
 		});
@@ -58,7 +58,7 @@ public class OnlineFriendController {
 			for (Entry<String, Integer> entry : userCommentArticleSessions.entrySet()) {
 				if (entry.getValue().equals(item)) {
 					OnlineFriendResponse response = new OnlineFriendResponse(false, senderId);
-					simpMessagingTemplate.convertAndSendToUser(entry.getKey(), "/topic/online-friend", response);
+					simpMessagingTemplate.convertAndSendToUser(entry.getKey(), "/friend-topic/online-friend", response);
 				}
 			}
 		});
@@ -71,7 +71,7 @@ public class OnlineFriendController {
 		List<String> destinations = headerAccessor.getNativeHeader("destination");
 		if (destinations != null) {
 			String destination = destinations.get(0);
-			if (destination.startsWith("/user/topic/online-friend")) {
+			if (destination.startsWith("/user/friend-topic/online-friend")) {
 				String senderSession = headerAccessor.getSessionId();
 				userCommentArticleSessions.remove(senderSession);
 			}
@@ -83,7 +83,7 @@ public class OnlineFriendController {
 		StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
 
 		String destination = headerAccessor.getDestination();
-		if (destination != null && destination.startsWith("/user/topic/online-friend")) {
+		if (destination != null && destination.startsWith("/user/friend-topic/online-friend")) {
 			String senderSession = headerAccessor.getSessionId();
 			List<String> tokens = headerAccessor.getNativeHeader("token");
 			if (tokens != null) {

@@ -51,7 +51,7 @@ public class EmotionCommentController {
 		response.put("commentId", request.getCommentId());
 		response.put("data", emotions);
 
-		this.simpMessagingTemplate.convertAndSend("/topic/emotion-comment/" + articleId, response);
+		this.simpMessagingTemplate.convertAndSend("/comment-topic/emotion/" + articleId, response);
 	}
 
 	@MessageMapping("/emotion-comment/delete/{articleId}")
@@ -64,7 +64,7 @@ public class EmotionCommentController {
 		Map<String, Object> response = new HashMap<>();
 		response.put("commentId", commentId);
 		response.put("data", emotions);
-		this.simpMessagingTemplate.convertAndSend("/topic/emotion-comment/" + articleId, response);
+		this.simpMessagingTemplate.convertAndSend("/comment-topic/emotion/" + articleId, response);
 	}
 
 	@EventListener
@@ -74,7 +74,7 @@ public class EmotionCommentController {
 		List<String> destinations = headerAccessor.getNativeHeader("destination");
 		if (destinations != null) {
 			String destination = destinations.get(0);
-			if (destination.startsWith("/topic/emotion-comment/")) {
+			if (destination.startsWith("/comment-topic/emotion/")) {
 				String[] destinationSplit = destination.split("/");
 				Integer articleId = Integer.parseInt(destinationSplit[destinationSplit.length - 1]);
 
@@ -92,7 +92,7 @@ public class EmotionCommentController {
 		StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
 
 		String destination = headerAccessor.getDestination();
-		if (destination != null && destination.startsWith("/topic/emotion-comment/")) {
+		if (destination != null && destination.startsWith("/comment-topic/emotion/")) {
 			String senderSession = headerAccessor.getSessionId();
 			List<String> tokens = headerAccessor.getNativeHeader("token");
 			if (tokens != null) {
