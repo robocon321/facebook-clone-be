@@ -8,7 +8,7 @@
 .settings/
 
 # Spring Boot
-bin/
+*/bin/
 target/
 build/
 *.jar
