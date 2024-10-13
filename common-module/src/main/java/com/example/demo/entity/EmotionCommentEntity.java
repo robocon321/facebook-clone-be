@@ -33,13 +33,11 @@ public class EmotionCommentEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer emotionId;
 
-	@ManyToOne
-	@JoinColumn(name = "comment_id", nullable = false)
-	private CommentArticleEntity comment;
+	@Column(name = "comment_id", nullable = false)
+	private Integer commentId;
 
-	@ManyToOne
-	@JoinColumn(name = "account_id", nullable = false)
-	private AccountEntity account;
+	@Column(name = "account_id", nullable = false)
+	private Integer accountId;
 
 	@Column(nullable = false)
 	private Timestamp createTime;

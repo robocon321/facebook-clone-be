@@ -17,7 +17,6 @@ import com.example.demo.entity.AccountEntity;
 import com.example.demo.entity.ActionHistoryEntity;
 import com.example.demo.exception.BlockException;
 import com.example.demo.exception.NotFoundException;
-import com.example.demo.provider.JwtProvider;
 import com.example.demo.repository.AccountRepository;
 import com.example.demo.repository.ActionHistoryRepository;
 import com.example.demo.request.AccountFriendshipRequest;
@@ -34,19 +33,17 @@ import com.example.demo.type.ErrorCodeType;
 
 @Service
 public class AccountService {
-	private JwtProvider jwtProvider;
 	private AccountRepository accountRepository;
 	private ActionHistoryRepository actionHistoryRepository;
 
-	public AccountService(JwtProvider jwtProvider, AccountRepository accountRepository,
+	public AccountService(AccountRepository accountRepository,
 			ActionHistoryRepository actionHistoryRepository) {
-		this.jwtProvider = jwtProvider;
 		this.accountRepository = accountRepository;
 		this.actionHistoryRepository = actionHistoryRepository;
 	}
 
-	public AccountResponse getSummaryInfo(String token) {
-		Integer id = jwtProvider.getAccountIdFromJWT(token);
+	public AccountResponse getSummaryInfo(String headerUserId) {
+		Integer id = Integer.parseInt(headerUserId);
 		Optional<AccountEntity> accountOpt = accountRepository.findById(id);
 		if (accountOpt.isEmpty())
 			throw new NotFoundException(ErrorCodeType.ERROR_ACCOUNT_NOT_FOUND);
@@ -58,8 +55,8 @@ public class AccountService {
 		return response;
 	}
 
-	public CustomPageResponse getFriendHistory(FriendHistoryRequest request, String token) {
-		Integer currentId = jwtProvider.getAccountIdFromJWT(token);
+	public CustomPageResponse getFriendHistory(FriendHistoryRequest request, String headerUserId) {
+		Integer currentId = Integer.parseInt(headerUserId);
 		Optional<AccountEntity> accountOpt = accountRepository.findById(currentId);
 		if (accountOpt.isEmpty())
 			throw new NotFoundException(ErrorCodeType.ERROR_ACCOUNT_NOT_FOUND);
@@ -88,10 +85,10 @@ public class AccountService {
 			Optional<ActionHistoryEntity> actionHistoryOpt = Optional.empty();
 			if (request.getType() == null) {
 				actionHistoryOpt = actionHistoryRepository
-						.findFirstByAccountAccountIdOrderByActionTimeDesc(item.getAccountId());
+						.findFirstByAccountIdOrderByActionTimeDesc(item.getAccountId());
 			} else {
 				actionHistoryOpt = actionHistoryRepository
-						.findFirstByAccountAccountIdAndStatusValueOrderByActionTimeDesc(item.getAccountId(),
+						.findFirstByAccountIdAndStatusValueOrderByActionTimeDesc(item.getAccountId(),
 								request.getType().getStatus());
 			}
 
@@ -115,8 +112,8 @@ public class AccountService {
 				.build();
 	}
 
-	public CustomPageResponse getListAccountByFriendshipStatus(AccountFriendshipRequest request, String token) {
-		Integer currentId = jwtProvider.getAccountIdFromJWT(token);
+	public CustomPageResponse getListAccountByFriendshipStatus(AccountFriendshipRequest request, String headerUserId) {
+		Integer currentId = Integer.parseInt(headerUserId);
 		Optional<AccountEntity> accountOpt = accountRepository.findById(currentId);
 		if (accountOpt.isEmpty())
 			throw new NotFoundException(ErrorCodeType.ERROR_ACCOUNT_NOT_FOUND);
@@ -142,8 +139,8 @@ public class AccountService {
 		return pageEntityToPageResponse(pageEntity, currentId);
 	}
 
-	public CustomPageResponse getReceiverByFriendshipStatus(AccountFriendshipRequest request, String token) {
-		Integer currentId = jwtProvider.getAccountIdFromJWT(token);
+	public CustomPageResponse getReceiverByFriendshipStatus(AccountFriendshipRequest request, String headerUserId) {
+		Integer currentId = Integer.parseInt(headerUserId);
 		Optional<AccountEntity> accountOpt = accountRepository.findById(currentId);
 		if (accountOpt.isEmpty())
 			throw new NotFoundException(ErrorCodeType.ERROR_ACCOUNT_NOT_FOUND);
@@ -169,8 +166,8 @@ public class AccountService {
 		return pageEntityToPageResponse(pageEntity, currentId);
 	}
 
-	public CustomPageResponse getSenderByFriendshipStatus(AccountFriendshipRequest request, String token) {
-		Integer currentId = jwtProvider.getAccountIdFromJWT(token);
+	public CustomPageResponse getSenderByFriendshipStatus(AccountFriendshipRequest request, String headerUserId) {
+		Integer currentId = Integer.parseInt(headerUserId);
 		Optional<AccountEntity> accountOpt = accountRepository.findById(currentId);
 		if (accountOpt.isEmpty())
 			throw new NotFoundException(ErrorCodeType.ERROR_ACCOUNT_NOT_FOUND);
@@ -198,8 +195,8 @@ public class AccountService {
 		return pageEntityToPageResponse(pageEntity, currentId);
 	}
 
-	public CustomPageResponse recommendFriend(RecommendFriendshipRequest request, String token) {
-		Integer currentId = jwtProvider.getAccountIdFromJWT(token);
+	public CustomPageResponse recommendFriend(RecommendFriendshipRequest request, String headerUserId) {
+		Integer currentId = Integer.parseInt(headerUserId);
 		Optional<AccountEntity> accountOpt = accountRepository.findById(currentId);
 		if (accountOpt.isEmpty())
 			throw new NotFoundException(ErrorCodeType.ERROR_ACCOUNT_NOT_FOUND);
@@ -226,15 +223,15 @@ public class AccountService {
 		return pageEntityToPageResponse(pageEntity, currentId);
 	}
 
-	public ActionHistoryResponse updateHistory(ActionHistoryStatusType type, String token) {
-		Integer currentId = jwtProvider.getAccountIdFromJWT(token);
+	public ActionHistoryResponse updateHistory(ActionHistoryStatusType type, String headerUserId) {
+		Integer currentId = Integer.parseInt(headerUserId);
 		Optional<AccountEntity> accountOpt = accountRepository.findById(currentId);
 		if (accountOpt.isEmpty())
 			throw new NotFoundException(ErrorCodeType.ERROR_ACCOUNT_NOT_FOUND);
 
 		Timestamp now = new Timestamp(System.currentTimeMillis());
 		ActionHistoryEntity actionHistory = ActionHistoryEntity.builder()
-				.account(accountOpt.get())
+				.accountId(accountOpt.get().getAccountId())
 				.actionTime(now)
 				.status(type)
 				.build();

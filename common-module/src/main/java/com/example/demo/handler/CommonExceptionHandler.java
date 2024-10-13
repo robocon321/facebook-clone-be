@@ -14,6 +14,7 @@ import com.example.demo.exception.BadRequestException;
 import com.example.demo.exception.BlockException;
 import com.example.demo.exception.ConflictException;
 import com.example.demo.exception.NotFoundException;
+import com.example.demo.exception.ResourceCreationException;
 
 @ControllerAdvice
 public class CommonExceptionHandler {
@@ -57,4 +58,13 @@ public class CommonExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage());
     }
 
+    @ExceptionHandler(ResourceCreationException.class)
+    public ResponseEntity<Object> handleResourceCreationException(Throwable ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(Throwable.class)
+    public ResponseEntity<Object> handleThrowable(Throwable ex) {
+        return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(ex.getMessage());
+    }
 }

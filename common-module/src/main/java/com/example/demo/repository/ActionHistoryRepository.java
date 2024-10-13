@@ -9,8 +9,8 @@ import com.example.demo.entity.ActionHistoryEntity;
 
 @Repository
 public interface ActionHistoryRepository extends JpaRepository<ActionHistoryEntity, Integer> {
-	Optional<ActionHistoryEntity> findFirstByAccountAccountIdOrderByActionTimeDesc(Integer accountId);
+	Optional<ActionHistoryEntity> findFirstByAccountIdOrderByActionTimeDesc(Integer accountId);
 
-	Optional<ActionHistoryEntity> findFirstByAccountAccountIdAndStatusValueOrderByActionTimeDesc(Integer accountId,
+	Optional<ActionHistoryEntity> findFirstByAccountIdAndStatusValueOrderByActionTimeDesc(Integer accountId,
 			Character statusValue);
 }

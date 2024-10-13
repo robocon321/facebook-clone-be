@@ -9,8 +9,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PostLoad;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
@@ -32,9 +30,8 @@ public class ActionHistoryEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer historyId;
 
-	@ManyToOne
-	@JoinColumn(name = "account_id", nullable = false)
-	private AccountEntity account;
+	@Column(nullable = false)
+	private Integer accountId;
 
 	@Column(nullable = false)
 	private Timestamp actionTime;

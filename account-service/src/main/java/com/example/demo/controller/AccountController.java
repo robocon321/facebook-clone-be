@@ -17,8 +17,10 @@ import com.example.demo.response.ActionHistoryResponse;
 import com.example.demo.response.CustomPageResponse;
 import com.example.demo.service.AccountService;
 import com.example.demo.type.ActionHistoryStatusType;
+import com.example.demo.utils.Const;
 
 import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/api/v1/account")
@@ -31,10 +33,9 @@ public class AccountController {
 
 	@GetMapping("/summary-info")
 	public AccountResponse getSummaryInfo(@RequestHeader HttpHeaders headers) {
-		String bearerToken = headers.getFirst("Authorization");
-		if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-			String token = bearerToken.substring(7);
-			return accountService.getSummaryInfo(token);
+		String headerUserId = headers.getFirst(Const.X_USER_ID_HEADER);
+		if (headerUserId != null) {
+			return accountService.getSummaryInfo(headerUserId);
 		}
 		return null;
 	}
@@ -42,10 +43,9 @@ public class AccountController {
 	@PostMapping("/action-history")
 	public ActionHistoryResponse updateHistory(@RequestBody ActionHistoryStatusType type,
 			@RequestHeader HttpHeaders headers) {
-		String bearerToken = headers.getFirst("Authorization");
-		if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-			String token = bearerToken.substring(7);
-			return accountService.updateHistory(type, token);
+		String headerUserId = headers.getFirst(Const.X_USER_ID_HEADER);
+		if (headerUserId != null) {
+			return accountService.updateHistory(type, headerUserId);
 		}
 		return null;
 	}
@@ -53,10 +53,9 @@ public class AccountController {
 	@GetMapping("/friend-history")
 	public CustomPageResponse friendHistory(@ModelAttribute @Valid FriendHistoryRequest request,
 			@RequestHeader HttpHeaders headers) {
-		String bearerToken = headers.getFirst("Authorization");
-		if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-			String token = bearerToken.substring(7);
-			return accountService.getFriendHistory(request, token);
+		String headerUserId = headers.getFirst(Const.X_USER_ID_HEADER);
+		if (headerUserId != null) {
+			return accountService.getFriendHistory(request, headerUserId);
 		}
 		return null;
 	}
@@ -64,10 +63,9 @@ public class AccountController {
 	@GetMapping("/account-friendship")
 	public CustomPageResponse getListFriendshipStatus(@ModelAttribute @Valid AccountFriendshipRequest request,
 			@RequestHeader HttpHeaders headers) {
-		String bearerToken = headers.getFirst("Authorization");
-		if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-			String token = bearerToken.substring(7);
-			return accountService.getListAccountByFriendshipStatus(request, token);
+		String headerUserId = headers.getFirst(Const.X_USER_ID_HEADER);
+		if (headerUserId != null) {
+			return accountService.getListAccountByFriendshipStatus(request, headerUserId);
 		}
 		return null;
 	}
@@ -75,10 +73,9 @@ public class AccountController {
 	@GetMapping("/receiver-account-friendship")
 	public CustomPageResponse getReceiverFriendship(@ModelAttribute @Valid AccountFriendshipRequest request,
 			@RequestHeader HttpHeaders headers) {
-		String bearerToken = headers.getFirst("Authorization");
-		if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-			String token = bearerToken.substring(7);
-			return accountService.getReceiverByFriendshipStatus(request, token);
+		String headerUserId = headers.getFirst(Const.X_USER_ID_HEADER);
+		if (headerUserId != null) {
+			return accountService.getReceiverByFriendshipStatus(request, headerUserId);
 		}
 		return null;
 	}
@@ -86,10 +83,9 @@ public class AccountController {
 	@GetMapping("/sender-account-friendship")
 	public CustomPageResponse getSenderFriendship(@ModelAttribute @Valid AccountFriendshipRequest request,
 			@RequestHeader HttpHeaders headers) {
-		String bearerToken = headers.getFirst("Authorization");
-		if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-			String token = bearerToken.substring(7);
-			return accountService.getSenderByFriendshipStatus(request, token);
+		String headerUserId = headers.getFirst(Const.X_USER_ID_HEADER);
+		if (headerUserId != null) {
+			return accountService.getSenderByFriendshipStatus(request, headerUserId);
 		}
 		return null;
 	}
@@ -97,10 +93,9 @@ public class AccountController {
 	@GetMapping("/recommend-account-friendship")
 	public CustomPageResponse recommendAccount(@ModelAttribute @Valid RecommendFriendshipRequest request,
 			@RequestHeader HttpHeaders headers) {
-		String bearerToken = headers.getFirst("Authorization");
-		if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-			String token = bearerToken.substring(7);
-			return accountService.recommendFriend(request, token);
+		String headerUserId = headers.getFirst(Const.X_USER_ID_HEADER);
+		if (headerUserId != null) {
+			return accountService.recommendFriend(request, headerUserId);
 		}
 		return null;
 	}

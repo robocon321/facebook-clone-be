@@ -1,19 +1,14 @@
 package com.example.demo.entity;
 
 import java.sql.Timestamp;
-import java.util.List;
 
 import com.example.demo.type.DeleteStatusType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.PostLoad;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
@@ -35,13 +30,11 @@ public class CommentArticleEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer commentId;
 
-	@ManyToOne
-	@JoinColumn(name = "article_id", nullable = false)
-	private ArticleEntity article;
+	@Column(name = "article_id", nullable = false)
+	private Integer articleId;
 
-	@ManyToOne
-	@JoinColumn(name = "account_id", nullable = false)
-	private AccountEntity account;
+	@Column(name = "account_id", nullable = false)
+	private Integer accountId;
 
 	@Column(nullable = false, columnDefinition = "NVARCHAR(1000)")
 	private String text;
@@ -49,12 +42,8 @@ public class CommentArticleEntity {
 	@Column(nullable = false, columnDefinition = "VARCHAR(100)")
 	private String mentionedAccounts;
 
-	@ManyToOne
-	@JoinColumn(name = "parent_id")
-	private CommentArticleEntity parent;
-
-	@OneToMany(mappedBy = "parent", fetch = FetchType.LAZY)
-	private List<CommentArticleEntity> children;
+	@Column(name = "parent_id")
+	private Integer parentId;
 
 	@Column(nullable = false)
 	private Timestamp createTime;
@@ -62,9 +51,8 @@ public class CommentArticleEntity {
 	@Column(nullable = false)
 	private Timestamp modTime;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "file_id")
-	private FileEntity file;
+	@Column(name = "file_id")
+	private Integer fileId;
 
 	@Transient
 	private DeleteStatusType status;
@@ -82,7 +70,4 @@ public class CommentArticleEntity {
 	void fillGenderTransient() {
 		this.status = DeleteStatusType.of(statusValue);
 	}
-
-	@OneToMany(mappedBy = "comment")
-	private List<EmotionCommentEntity> emotions;
 }

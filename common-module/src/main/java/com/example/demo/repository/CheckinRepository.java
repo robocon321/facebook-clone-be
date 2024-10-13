@@ -11,7 +11,6 @@ import com.example.demo.entity.CheckinEntity;
 
 @Repository
 public interface CheckinRepository extends JpaRepository<CheckinEntity, Integer> {
-	@Query(value = "SELECT * FROM checkin WHERE country LIKE %:search% OR address LIKE %:search% OR city LIKE %:search%", nativeQuery = true)
+	@Query(value = "SELECT * FROM checkin WHERE country LIKE CONCAT('%', :search, '%') OR address LIKE CONCAT('%', :search, '%') OR city LIKE CONCAT('%', :search, '%')", nativeQuery = true)
 	Page<CheckinEntity> searchCheckin(@Param("search") String search, Pageable pageable);
-
 }

@@ -10,10 +10,12 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.demo.provider.JwtProvider;
+import com.example.demo.exception.BadRequestException;
 import com.example.demo.request.CreateFriendshipRequest;
 import com.example.demo.response.FriendshipResponse;
 import com.example.demo.service.FriendshipService;
+import com.example.demo.type.ErrorCodeType;
+import com.example.demo.utils.Const;
 
 import jakarta.validation.Valid;
 
@@ -21,45 +23,35 @@ import jakarta.validation.Valid;
 @RequestMapping("/api/v1/friendship")
 public class FriendshipController {
 	private FriendshipService friendshipService;
-	private JwtProvider jwtProvider;
 
-	public FriendshipController(FriendshipService friendshipService, JwtProvider jwtProvider) {
+	public FriendshipController(FriendshipService friendshipService) {
 		this.friendshipService = friendshipService;
-		this.jwtProvider = jwtProvider;
 	}
 
 	@PostMapping("/create")
 	public ResponseEntity<FriendshipResponse> createFriendship(@Valid @RequestBody CreateFriendshipRequest request,
 			@RequestHeader HttpHeaders headers) {
-		// Get senderId
-		String authorizationHeader = headers.getFirst("Authorization");
-		String token;
-		if (authorizationHeader == null) {
-			token = "";
+		String headerUserId = headers.getFirst(Const.X_USER_ID_HEADER);
+		if (headerUserId == null) {
+			throw new BadRequestException(ErrorCodeType.ERROR_REQUIRE_LOGIN);
 		} else {
-			token = authorizationHeader.substring(7);
+			Integer senderId = Integer.parseInt(headerUserId);
+			FriendshipResponse response = friendshipService.createFriendship(request.getReceiverId(), senderId,
+					request.getStatus());
+			return ResponseEntity.status(HttpStatus.CREATED).body(response);
 		}
-		Integer senderId = jwtProvider.getAccountIdFromJWT(token);
-
-		// Return response
-		FriendshipResponse response = friendshipService.createFriendship(request.getReceiverId(), senderId,
-				request.getStatus());
-		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 
 	@PostMapping("/check-sender")
 	public boolean checkSenderBlock(@Valid @RequestBody CreateFriendshipRequest request,
 			@RequestHeader HttpHeaders headers) {
-		String authorizationHeader = headers.getFirst("Authorization");
-		String token;
-		if (authorizationHeader == null) {
-			token = "";
+		String headerUserId = headers.getFirst(Const.X_USER_ID_HEADER);
+		if (headerUserId == null) {
+			throw new BadRequestException(ErrorCodeType.ERROR_REQUIRE_LOGIN);
 		} else {
-			token = authorizationHeader.substring(7);
+			Integer senderId = Integer.parseInt(headerUserId);
+			return friendshipService.checkBlockFromSender(request.getReceiverId(), senderId);
 		}
-		Integer senderId = jwtProvider.getAccountIdFromJWT(token);
-
-		return friendshipService.checkBlockFromSender(request.getReceiverId(), senderId);
 	}
 
 	@GetMapping

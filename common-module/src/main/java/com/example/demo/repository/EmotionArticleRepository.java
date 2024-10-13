@@ -12,10 +12,10 @@ import jakarta.transaction.Transactional;
 
 @Repository
 public interface EmotionArticleRepository extends JpaRepository<EmotionArticleEntity, Integer> {
-	List<EmotionArticleEntity> findByArticleArticleId(Integer articleId);
+	List<EmotionArticleEntity> findAllByArticleId(Integer articleId);
 
-	Optional<EmotionArticleEntity> findByAccountAccountIdAndArticleArticleId(Integer accountId, Integer articleId);
+	Optional<EmotionArticleEntity> findByAccountIdAndArticleId(Integer accountId, Integer articleId);
 
 	@Transactional
-	void deleteAllByAccountAccountIdAndArticleArticleId(Integer accountId, Integer articleId);
+	void deleteAllByAccountIdAndArticleId(Integer accountId, Integer articleId);
 }

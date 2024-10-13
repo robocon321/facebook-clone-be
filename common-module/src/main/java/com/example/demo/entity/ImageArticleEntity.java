@@ -1,21 +1,14 @@
 package com.example.demo.entity;
 
 import java.sql.Timestamp;
-import java.util.List;
 
 import com.example.demo.type.DeleteStatusType;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.PostLoad;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
@@ -60,17 +53,9 @@ public class ImageArticleEntity {
 		this.status = DeleteStatusType.of(statusValue);
 	}
 
-	@OneToOne
-	@JoinColumn(nullable = false, name = "file_id")
-	private FileEntity file;
+	@Column(nullable = false, name = "file_id")
+	private Integer fileId;
 
-	@ManyToOne
-	@JoinColumn(nullable = false, name = "article_id")
-	private ArticleEntity article;
-
-	@OneToMany(cascade = { CascadeType.PERSIST }, fetch = FetchType.LAZY, mappedBy = "imageArticle")
-	private List<TextImageArticleEntity> textImageArticles;
-
-	@OneToMany(cascade = { CascadeType.PERSIST }, fetch = FetchType.LAZY, mappedBy = "imageArticle")
-	private List<TagImageArticleEntity> tagImageArticles;
+	@Column(nullable = false, name = "article_id")
+	private Integer articleId;
 }

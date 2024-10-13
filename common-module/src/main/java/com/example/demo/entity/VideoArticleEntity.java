@@ -10,7 +10,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -40,11 +39,9 @@ public class VideoArticleEntity {
 	@Column(nullable = false)
 	private DeleteStatusType status;
 
-	@OneToOne
-	@JoinColumn(nullable = false, name = "file_id")
-	private FileEntity file;
+	@Column(nullable = false, name = "file_id")
+	private Integer fileId;
 
-	@ManyToOne
-	@JoinColumn(nullable = false, name = "article_id")
-	private ArticleEntity article;
+	@Column(nullable = false, name = "article_id")
+	private Integer articleId;
 }

@@ -10,8 +10,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PostLoad;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
@@ -33,13 +31,11 @@ public class EmotionArticleEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer emotionId;
 
-	@ManyToOne
-	@JoinColumn(name = "article_id", nullable = false)
-	private ArticleEntity article;
+	@Column(name = "article_id", nullable = false)
+	private Integer articleId;
 
-	@ManyToOne
-	@JoinColumn(name = "account_id", nullable = false)
-	private AccountEntity account;
+	@Column(name = "account_id", nullable = false)
+	private Integer accountId;
 
 	@Column(nullable = false)
 	private Timestamp createTime;

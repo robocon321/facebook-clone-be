@@ -7,12 +7,10 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-public class LoginRequest {	
+public class LoginRequest {
 	@NotBlank(message = "Username must not be blank")
-	@NotNull(message = "Username must not be null")
 	private String username;
-	
+
 	@NotBlank(message = "Password must not be blank")
-	@NotNull(message = "Password must not be null")
 	private String password;
 }

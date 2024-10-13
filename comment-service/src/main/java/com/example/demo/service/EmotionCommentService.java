@@ -55,7 +55,7 @@ public class EmotionCommentService {
 		EmotionCommentEntity emotion = null;
 
 		Optional<EmotionCommentEntity> preMotionOpt = emotionCommentRepository
-				.findByAccountAccountIdAndCommentCommentId(accountId, commentId);
+				.findByAccountIdAndCommentId(accountId, commentId);
 		if (preMotionOpt.isPresent()) {
 			emotion = preMotionOpt.get();
 			emotion.setType(type);
@@ -68,8 +68,8 @@ public class EmotionCommentService {
 					.modTime(now)
 					.status(DeleteStatusType.ACTIVE)
 					.type(type)
-					.comment(comment)
-					.account(account).build();
+					.commentId(comment.getCommentId())
+					.accountId(account.getAccountId()).build();
 		}
 
 		EmotionCommentEntity newEmotion = emotionCommentRepository.save(emotion);
@@ -84,19 +84,20 @@ public class EmotionCommentService {
 	}
 
 	public List<EmotionCommentResponse> getListEmotionByCommentId(Integer commentId) {
-		List<EmotionCommentEntity> emotions = emotionCommentRepository.findByCommentCommentId(commentId);
+		List<EmotionCommentEntity> emotions = emotionCommentRepository.findAllByCommentId(commentId);
 		return emotions.stream().map(item -> {
 			EmotionCommentResponse response = new EmotionCommentResponse();
 			BeanUtils.copyProperties(item, response);
 
+			Optional<AccountEntity> accountOpt = accountRepository.findById(item.getAccountId());
 			AccountResponse accountResponse = new AccountResponse();
-			BeanUtils.copyProperties(item.getAccount(), accountResponse);
+			BeanUtils.copyProperties(accountOpt.get(), accountResponse);
 			response.setAccount(accountResponse);
 			return response;
 		}).toList();
 	}
 
 	public void deleteEmotion(Integer accountId, Integer commentId) {
-		emotionCommentRepository.deleteAllByAccountAccountIdAndCommentCommentId(accountId, commentId);
+		emotionCommentRepository.deleteAllByAccountIdAndCommentId(accountId, commentId);
 	}
 }

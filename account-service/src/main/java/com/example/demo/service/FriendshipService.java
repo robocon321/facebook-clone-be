@@ -65,20 +65,20 @@ public class FriendshipService {
 				}
 
 				previousFriendship = friendshipOpt.get();
-				AccountEntity previousReceiver = previousFriendship.getReceiver();
-				AccountEntity previousSender = previousFriendship.getSender();
+				Integer previousReceiverId = previousFriendship.getReceiverId();
+				Integer previousSenderId = previousFriendship.getSenderId();
 
 				// Exist block from receiver
 				if (previousFriendship.getStatus() == FriendshipStatusType.BLOCK) {
-					if (previousReceiver.getAccountId().equals(senderId))
+					if (previousReceiverId.equals(senderId))
 						throw new BlockException(ErrorCodeType.ERROR_ACCOUNT_SPECIFIC_BLOCKED_YOU, receiverId);
 					else
 						newFriendship = updateFriendship(previousFriendship, receiver, sender, status);
 				} else if (previousFriendship.getStatus() == FriendshipStatusType.PENDING) {
 					// Exist friendship before and waiting for accept or reject
-					if (previousReceiver.getAccountId().equals(senderId))
+					if (previousReceiverId.equals(senderId))
 						throw new ConflictException(ErrorCodeType.ERROR_ACCOUNT_SPECIFIC_MATCH_FRIENDSHIP);
-					if (previousSender.getAccountId().equals(senderId))
+					if (previousSenderId.equals(senderId))
 						throw new ConflictException(ErrorCodeType.ERROR_ACCOUNT_MATCH_FRIENDSHIP);
 				} else if (previousFriendship.getStatus() == FriendshipStatusType.REJECTED
 						|| previousFriendship.getStatus() == FriendshipStatusType.CANCEL)
@@ -95,7 +95,7 @@ public class FriendshipService {
 
 				previousFriendship = friendshipOpt.get();
 				if (previousFriendship.getStatus() == FriendshipStatusType.PENDING) {
-					if (previousFriendship.getSender().getAccountId().equals(senderId))
+					if (previousFriendship.getSenderId().equals(senderId))
 						throw new BlockException(ErrorCodeType.ERROR_PERMISSION_DENY);
 					else
 						newFriendship = updateFriendship(previousFriendship, receiver, sender, status);
@@ -137,7 +137,7 @@ public class FriendshipService {
 		} else {
 			FriendshipEntity friendship = friendshipOpt.get();
 			if (friendship.getStatus() == FriendshipStatusType.BLOCK) {
-				if (friendship.getSender().getAccountId().equals(senderId)) {
+				if (friendship.getSenderId().equals(senderId)) {
 					return true;
 				} else
 					throw new BlockException(ErrorCodeType.ERROR_ACCOUNT_SPECIFIC_BLOCKED_YOU, receiverId);
@@ -148,7 +148,8 @@ public class FriendshipService {
 
 	private FriendshipEntity saveFriendship(AccountEntity receiver, AccountEntity sender, FriendshipStatusType status) {
 		Timestamp now = new Timestamp(System.currentTimeMillis());
-		final FriendshipEntity friendShip = FriendshipEntity.builder().receiver(receiver).sender(sender)
+		final FriendshipEntity friendShip = FriendshipEntity.builder().receiverId(receiver.getAccountId())
+				.senderId(sender.getAccountId())
 				.requestTime(now)
 				.status(status)
 				.build();
@@ -158,8 +159,8 @@ public class FriendshipService {
 	private FriendshipEntity updateFriendship(FriendshipEntity previousFriendship, AccountEntity receiver,
 			AccountEntity sender, FriendshipStatusType status) {
 		Timestamp now = new Timestamp(System.currentTimeMillis());
-		previousFriendship.setReceiver(receiver);
-		previousFriendship.setSender(sender);
+		previousFriendship.setReceiverId(receiver.getAccountId());
+		previousFriendship.setSenderId(sender.getAccountId());
 		previousFriendship.setRequestTime(now);
 		previousFriendship.setStatus(status);
 		return friendshipRepository.save(previousFriendship);
@@ -169,7 +170,7 @@ public class FriendshipService {
 		FriendshipResponse response = new FriendshipResponse();
 		BeanUtils.copyProperties(friendship, response);
 		response.setFriendshipId(friendship.getFriendshipId());
-		response.setReceiverId(friendship.getReceiver().getAccountId());
+		response.setReceiverId(friendship.getReceiverId());
 		return response;
 	}
 }

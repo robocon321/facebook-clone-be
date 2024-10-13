@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.response.ProfileResponse;
 import com.example.demo.service.ProfileService;
+import com.example.demo.utils.Const;
 
 @RestController
 @RequestMapping("/api/v1/profile")
@@ -22,14 +23,9 @@ public class ProfileController {
 	@GetMapping
 	public ProfileResponse getSummaryInfo(@RequestParam("profileId") Integer profileId,
 			@RequestHeader HttpHeaders headers) {
-		String bearerToken = headers.getFirst("Authorization");
-		if (bearerToken == null)
+		String headerUserId = headers.getFirst(Const.X_USER_ID_HEADER);
+		if (headerUserId == null)
 			return profileService.getProfileInfoByAnonymous(profileId);
-
-		if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-			String token = bearerToken.substring(7);
-			return profileService.getProfileInfoByAccount(profileId, token);
-		}
-		return null;
+		return profileService.getProfileInfoByAccount(profileId, headerUserId);
 	}
 }

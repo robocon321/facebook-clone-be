@@ -18,15 +18,17 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import com.example.demo.entity.AccountEntity;
-import com.example.demo.entity.CommentArticleEntity;
-import com.example.demo.entity.FileEntity;
 import com.example.demo.entity.ArticleEntity;
+import com.example.demo.entity.CommentArticleEntity;
+import com.example.demo.entity.EmotionCommentEntity;
+import com.example.demo.entity.FileEntity;
 import com.example.demo.exception.BadRequestException;
 import com.example.demo.exception.NotFoundException;
 import com.example.demo.repository.AccountRepository;
-import com.example.demo.repository.CommentArticleRepository;
-import com.example.demo.repository.FileRepository;
 import com.example.demo.repository.ArticleRepository;
+import com.example.demo.repository.CommentArticleRepository;
+import com.example.demo.repository.EmotionCommentRepository;
+import com.example.demo.repository.FileRepository;
 import com.example.demo.request.CommentArticleRequest;
 import com.example.demo.response.AccountResponse;
 import com.example.demo.response.CommentArticleResponse;
@@ -45,17 +47,23 @@ public class CommentArticleService {
 
 	private ArticleRepository articleRepository;
 
+	private EmotionCommentRepository emotionCommentRepository;
+
 	private RestTemplate restTemplate;
 
 	private static final String FILE_URL = "http://localhost:9090/file";
 
-	public CommentArticleService(AccountRepository accountRepository, FileRepository fileRepository,
-			CommentArticleRepository commentArticleRepository, ArticleRepository articleRepository,
+	public CommentArticleService(AccountRepository accountRepository,
+			FileRepository fileRepository,
+			CommentArticleRepository commentArticleRepository,
+			ArticleRepository articleRepository,
+			EmotionCommentRepository emotionCommentRepository,
 			RestTemplate restTemplate) {
 		this.accountRepository = accountRepository;
 		this.fileRepository = fileRepository;
 		this.commentArticleRepository = commentArticleRepository;
 		this.articleRepository = articleRepository;
+		this.emotionCommentRepository = emotionCommentRepository;
 		this.restTemplate = restTemplate;
 	}
 
@@ -82,7 +90,7 @@ public class CommentArticleService {
 				if (fileOpt.isEmpty())
 					throw new BadRequestException(ErrorCodeType.ERROR_CANNOT_SAVE_FILE, request.getFile().getName());
 				FileEntity file = fileOpt.get();
-				entity.setFile(file);
+				entity.setFileId(file.getFileId());
 			}
 		}
 
@@ -90,21 +98,20 @@ public class CommentArticleService {
 		if (accountOpt.isEmpty())
 			throw new NotFoundException(ErrorCodeType.ERROR_ACCOUNT_SPECIFIC_NOT_FOUND, accountId);
 		AccountEntity account = accountOpt.get();
-		entity.setAccount(account);
+		entity.setAccountId(account.getAccountId());
 
 		Optional<ArticleEntity> articleOpt = articleRepository.findById(request.getArticleId());
 		if (articleOpt.isEmpty())
 			throw new NotFoundException(ErrorCodeType.ERROR_ARTICLE_SPECIFIC_NOT_FOUND, request.getArticleId());
 		ArticleEntity article = articleOpt.get();
-		entity.setArticle(article);
+		entity.setArticleId(article.getArticleId());
 
 		if (request.getParentId() != null) {
 			Integer parentId = request.getParentId();
 			Optional<CommentArticleEntity> commentOpt = commentArticleRepository.findById(parentId);
 			if (commentOpt.isEmpty())
 				throw new NotFoundException(ErrorCodeType.ERROR_COMMENT_SPECIFIC_NOT_FOUND, parentId);
-			CommentArticleEntity parentComment = commentOpt.get();
-			entity.setParent(parentComment);
+			entity.setParentId(commentOpt.get().getParentId());
 		}
 
 		CommentArticleEntity newEntity = commentArticleRepository.save(entity);
@@ -112,7 +119,7 @@ public class CommentArticleService {
 	}
 
 	public List<CommentArticleResponse> getAllCommentByArticle(Integer articleId) {
-		List<CommentArticleEntity> entities = commentArticleRepository.findByArticleArticleId(articleId);
+		List<CommentArticleEntity> entities = commentArticleRepository.findAllByArticleId(articleId);
 		return entities.stream().map(this::mapCommentEntityToDTO).toList();
 	}
 
@@ -121,19 +128,24 @@ public class CommentArticleService {
 		BeanUtils.copyProperties(entity, response);
 
 		AccountResponse accountResponse = new AccountResponse();
-		AccountEntity account = entity.getAccount();
-		BeanUtils.copyProperties(account, accountResponse);
+		Integer accountId = entity.getAccountId();
+
+		Optional<AccountEntity> accountOpt = accountRepository.findById(accountId);
+
+		BeanUtils.copyProperties(accountOpt.get(), accountResponse);
 		response.setAccount(accountResponse);
 
-		if (entity.getParent() != null) {
-			response.setParentId(entity.getParent().getCommentId());
+		if (entity.getParentId() != null) {
+			response.setParentId(entity.getParentId());
 		}
 
-		if (entity.getFile() != null) {
-			FileEntity fileEntity = entity.getFile();
-			FileResponse fileResponse = new FileResponse();
-			BeanUtils.copyProperties(fileEntity, fileResponse);
-			response.setFile(fileResponse);
+		if (entity.getFileId() != null) {
+			Optional<FileEntity> fileOpt = fileRepository.findById(entity.getFileId());
+			if (fileOpt.isPresent()) {
+				FileResponse fileResponse = new FileResponse();
+				BeanUtils.copyProperties(fileOpt.get(), fileResponse);
+				response.setFile(fileResponse);
+			}
 		}
 
 		if (entity.getMentionedAccounts() != null && entity.getMentionedAccounts().length() > 0) {
@@ -155,12 +167,14 @@ public class CommentArticleService {
 			response.setMentions(accountResponses);
 		}
 
-		if (entity.getEmotions() != null) {
-			List<EmotionCommentResponse> emotionCommentResponses = entity.getEmotions().stream().map(item -> {
+		List<EmotionCommentEntity> emotions = emotionCommentRepository.findAllByCommentId(entity.getCommentId());
+		if (emotions != null) {
+			List<EmotionCommentResponse> emotionCommentResponses = emotions.stream().map(item -> {
 				EmotionCommentResponse emotionCommentResponse = new EmotionCommentResponse();
 				BeanUtils.copyProperties(item, emotionCommentResponse);
 
-				AccountEntity accountEmotion = item.getAccount();
+				Optional<AccountEntity> accountEmotionOpt = accountRepository.findById(item.getAccountId());
+				AccountEntity accountEmotion = accountEmotionOpt.get();
 				AccountResponse accountEmotionResponse = new AccountResponse();
 				BeanUtils.copyProperties(accountEmotion, accountEmotionResponse);
 				emotionCommentResponse.setAccount(accountResponse);

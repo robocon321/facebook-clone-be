@@ -34,8 +34,8 @@ public class CreateAccountRequest {
 	@ValidName(message = "Invalid lastname")
 	private String lastName;
 
-	@NotNull(message = "Birthdate must be not null")
-	private Date birthdate;
+	@NotNull(message = "birthday must be not null")
+	private Date birthday;
 
 	@NotNull(message = "Gender must be not null")
 	private GenderType gender;

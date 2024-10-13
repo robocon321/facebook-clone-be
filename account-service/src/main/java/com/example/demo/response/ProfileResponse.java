@@ -16,7 +16,7 @@ public class ProfileResponse {
 	private String phone;
 	private String firstName;
 	private String lastName;
-	private Date birthdate;
+	private Date birthday;
 	private GenderType gender;
 	private String profilePictureUrl;
 	private String coverPhotoUrl;

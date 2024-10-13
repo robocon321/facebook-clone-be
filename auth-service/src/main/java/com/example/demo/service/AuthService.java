@@ -17,7 +17,7 @@ import com.example.demo.dto.response.CreateAccountResponse;
 import com.example.demo.entity.AccountEntity;
 import com.example.demo.entity.ActionHistoryEntity;
 import com.example.demo.exception.BlockException;
-import com.example.demo.provider.JwtProvider;
+import com.example.demo.exception.ResourceCreationException;
 import com.example.demo.repository.AccountRepository;
 import com.example.demo.repository.ActionHistoryRepository;
 import com.example.demo.type.ActionHistoryStatusType;
@@ -25,6 +25,7 @@ import com.example.demo.type.DeleteStatusType;
 import com.example.demo.type.ErrorCodeType;
 import com.example.demo.utils.HandleStringUtils;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 
@@ -37,13 +38,11 @@ public class AuthService {
     private Long jwtExpiration;
 
     private AccountRepository repository;
-    private JwtProvider jwtProvider;
     private ActionHistoryRepository actionHistoryRepository;
 
-    public AuthService(AccountRepository repository, JwtProvider jwtProvider,
+    public AuthService(AccountRepository repository,
             ActionHistoryRepository actionHistoryRepository) {
         this.repository = repository;
-        this.jwtProvider = jwtProvider;
         this.actionHistoryRepository = actionHistoryRepository;
     }
 
@@ -52,12 +51,14 @@ public class AuthService {
      * @return CreateAccountResponse
      */
     public CreateAccountResponse saveAccount(CreateAccountRequest request) {
+        if (repository.existsByEmailOrPhone(request.getEmail(), request.getPhone())) {
+            throw new ResourceCreationException(ErrorCodeType.ERROR_ACCOUNT_EXIST);
+        }
         AccountEntity entity = new AccountEntity();
         BeanUtils.copyProperties(request, entity);
         entity.setStatus(DeleteStatusType.ACTIVE);
         entity.setWebsite(HandleStringUtils.generateRandomString(10));
         repository.save(entity);
-        // TODO: check exist account before save if exist then throw conflict exception
         updateHistory(entity, ActionHistoryStatusType.REGISTER);
         CreateAccountResponse response = new CreateAccountResponse();
         BeanUtils.copyProperties(entity, response);
@@ -68,7 +69,7 @@ public class AuthService {
         if (userDetails.getAccount().getStatus() == DeleteStatusType.INACTIVE)
             throw new BlockException(ErrorCodeType.ERROR_ACCOUNT_BLOCKED);
         Instant now = Instant.now();
-        Instant expiry = now.plus(jwtExpiration, ChronoUnit.MILLIS);
+        Instant expiry = now.plus(jwtExpiration, ChronoUnit.SECONDS);
 
         updateHistory(userDetails.getAccount(), ActionHistoryStatusType.LOGIN);
 
@@ -82,14 +83,19 @@ public class AuthService {
                 .compact();
     }
 
-    public boolean validateToken(String token) {
-        return jwtProvider.validateToken(token);
+    public Integer getUserIdFromJWT(String jwt) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(jwtSecret.getBytes())
+                .build()
+                .parseClaimsJws(jwt)
+                .getBody();
+        return Integer.parseInt(claims.getSubject());
     }
 
     private void updateHistory(AccountEntity account, ActionHistoryStatusType type) {
         Timestamp now = new Timestamp(System.currentTimeMillis());
         ActionHistoryEntity actionHistory = ActionHistoryEntity.builder()
-                .account(account)
+                .accountId(account.getAccountId())
                 .actionTime(now)
                 .status(type)
                 .build();
@@ -98,5 +104,4 @@ public class AuthService {
         ActionHistoryResponse historyResponse = new ActionHistoryResponse();
         BeanUtils.copyProperties(newActionHistory, historyResponse);
     }
-
 }

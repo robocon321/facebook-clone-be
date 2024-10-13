@@ -15,11 +15,11 @@ import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.socket.messaging.AbstractSubProtocolEvent;
 
-import com.example.demo.provider.JwtProvider;
 import com.example.demo.request.EmotionCommentRequest;
 import com.example.demo.response.EmotionCommentResponse;
 import com.example.demo.service.EmotionCommentService;
 import com.example.demo.type.EmotionType;
+import com.example.demo.utils.Const;
 
 @Controller
 public class EmotionCommentController {
@@ -27,14 +27,11 @@ public class EmotionCommentController {
 
 	private EmotionCommentService emotionCommentService;
 
-	private JwtProvider jwtProvider;
-
 	private SimpMessagingTemplate simpMessagingTemplate;
 
-	public EmotionCommentController(EmotionCommentService emotionCommentService, JwtProvider jwtProvider,
+	public EmotionCommentController(EmotionCommentService emotionCommentService,
 			SimpMessagingTemplate simpMessagingTemplate) {
 		this.emotionCommentService = emotionCommentService;
-		this.jwtProvider = jwtProvider;
 		this.simpMessagingTemplate = simpMessagingTemplate;
 		userSessions = new ConcurrentHashMap<>();
 	}
@@ -94,10 +91,10 @@ public class EmotionCommentController {
 		String destination = headerAccessor.getDestination();
 		if (destination != null && destination.startsWith("/comment-topic/emotion/")) {
 			String senderSession = headerAccessor.getSessionId();
-			List<String> tokens = headerAccessor.getNativeHeader("token");
-			if (tokens != null) {
-				String token = tokens.get(0);
-				Integer senderId = jwtProvider.getAccountIdFromJWT(token);
+			List<String> headerUserIds = headerAccessor.getNativeHeader(Const.X_USER_ID_HEADER);
+			if (headerUserIds != null) {
+				String headerUserId = headerUserIds.get(0);
+				Integer senderId = Integer.parseInt(headerUserId);
 
 				String[] destinationSplit = destination.split("/");
 				Integer articleId = Integer.parseInt(destinationSplit[destinationSplit.length - 1]);

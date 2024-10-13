@@ -54,8 +54,9 @@ public class EmotionArticleService {
 
 		EmotionArticleEntity emotion = null;
 
-		Optional<EmotionArticleEntity> preMotionOpt = emotionArticleRepository.findByAccountAccountIdAndArticleArticleId(accountId,
-				articleId);
+		Optional<EmotionArticleEntity> preMotionOpt = emotionArticleRepository
+				.findByAccountIdAndArticleId(accountId,
+						articleId);
 		if (preMotionOpt.isPresent()) {
 			emotion = preMotionOpt.get();
 			emotion.setType(type);
@@ -63,9 +64,13 @@ public class EmotionArticleService {
 		} else {
 			ArticleEntity article = articleOpt.get();
 			Timestamp now = new Timestamp(System.currentTimeMillis());
-			emotion = EmotionArticleEntity.builder().createTime(now).modTime(now).status(DeleteStatusType.ACTIVE)
-					.type(type).article(article)
-					.account(account).build();
+			emotion = EmotionArticleEntity.builder()
+					.createTime(now)
+					.modTime(now)
+					.status(DeleteStatusType.ACTIVE)
+					.type(type)
+					.articleId(article.getArticleId())
+					.accountId(accountId).build();
 		}
 
 		EmotionArticleEntity newEmotion = emotionArticleRepository.save(emotion);
@@ -80,19 +85,20 @@ public class EmotionArticleService {
 	}
 
 	public List<EmotionArticleResponse> getListEmotionByArticleId(Integer articleId) {
-		List<EmotionArticleEntity> emotions = emotionArticleRepository.findByArticleArticleId(articleId);
+		List<EmotionArticleEntity> emotions = emotionArticleRepository.findAllByArticleId(articleId);
 		return emotions.stream().map(item -> {
 			EmotionArticleResponse response = new EmotionArticleResponse();
 			BeanUtils.copyProperties(item, response);
 
 			AccountResponse accountResponse = new AccountResponse();
-			BeanUtils.copyProperties(item.getAccount(), accountResponse);
+			Optional<AccountEntity> accountOpt = accountRepository.findById(item.getAccountId());
+			BeanUtils.copyProperties(accountOpt.get(), accountResponse);
 			response.setAccount(accountResponse);
 			return response;
 		}).toList();
 	}
 
 	public void deleteEmotion(Integer accountId, Integer articleId) {
-		emotionArticleRepository.deleteAllByAccountAccountIdAndArticleArticleId(accountId, articleId);
+		emotionArticleRepository.deleteAllByAccountIdAndArticleId(accountId, articleId);
 	}
 }

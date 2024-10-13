@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y curl && apt-get clean
 LABEL key=robocon321
 
 # Add the application's jar to the image
-COPY target/realtime-service-0.0.1-SNAPSHOT.jar app.jar
+COPY target/friend-service-0.0.1-SNAPSHOT.jar app.jar
 
 # execute the application
 ENTRYPOINT ["java", "-jar", "app.jar"]

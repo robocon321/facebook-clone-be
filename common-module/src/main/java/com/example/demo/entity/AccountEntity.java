@@ -1,21 +1,15 @@
 package com.example.demo.entity;
 
-import java.io.Serializable;
 import java.sql.Date;
-import java.util.List;
 
 import com.example.demo.type.DeleteStatusType;
 import com.example.demo.type.GenderType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.PostLoad;
 import jakarta.persistence.PostLoad;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
@@ -31,7 +25,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @Entity
 @Table(name = "account")
-public class AccountEntity implements Serializable {
+public class AccountEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer accountId;
@@ -52,7 +46,7 @@ public class AccountEntity implements Serializable {
 	private String lastName;
 
 	@Column(nullable = false)
-	private Date birthdate;
+	private Date birthday;
 
 	@Transient
 	private GenderType gender;
@@ -92,29 +86,4 @@ public class AccountEntity implements Serializable {
 		this.gender = GenderType.of(genderValue);
 		this.status = DeleteStatusType.of(statusValue);
 	}
-
-	@OneToMany(mappedBy = "account", fetch = FetchType.LAZY)
-	private List<ActionHistoryEntity> loginHistories;
-
-	@OneToMany(mappedBy = "sender", fetch = FetchType.LAZY)
-	private List<FriendshipEntity> senders;
-
-	@OneToMany(mappedBy = "receiver", fetch = FetchType.LAZY)
-	private List<FriendshipEntity> receiver;
-
-	@ManyToMany(mappedBy = "tags", fetch = FetchType.LAZY)
-	private List<ArticleEntity> tagArticles;
-
-	@OneToMany(mappedBy = "account", fetch = FetchType.LAZY)
-	private List<TagImageArticleEntity> tagImageArticles;
-
-	@OneToMany(mappedBy = "account", fetch = FetchType.LAZY)
-	private List<CommentArticleEntity> comments;
-
-	@OneToMany(mappedBy = "account", fetch = FetchType.LAZY)
-	private List<EmotionArticleEntity> emotionArticles;
-
-	@OneToMany(mappedBy = "account", fetch = FetchType.LAZY)
-	private List<EmotionCommentEntity> emotionComments;
-
 }

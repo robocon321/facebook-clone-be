@@ -3,6 +3,7 @@ package com.example.demo.service;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,12 +21,15 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import com.example.demo.entity.AccountEntity;
+import com.example.demo.entity.ArticleEntity;
 import com.example.demo.entity.CheckinEntity;
 import com.example.demo.entity.CommentArticleEntity;
+import com.example.demo.entity.EmotionArticleEntity;
+import com.example.demo.entity.EmotionCommentEntity;
 import com.example.demo.entity.FileEntity;
 import com.example.demo.entity.FriendshipEntity;
 import com.example.demo.entity.ImageArticleEntity;
-import com.example.demo.entity.ArticleEntity;
+import com.example.demo.entity.TagArticleEntity;
 import com.example.demo.entity.TagImageArticleEntity;
 import com.example.demo.entity.TextImageArticleEntity;
 import com.example.demo.entity.VideoArticleEntity;
@@ -33,21 +37,29 @@ import com.example.demo.exception.BadRequestException;
 import com.example.demo.exception.BlockException;
 import com.example.demo.exception.NotFoundException;
 import com.example.demo.repository.AccountRepository;
+import com.example.demo.repository.ArticleRepository;
 import com.example.demo.repository.CheckinRepository;
+import com.example.demo.repository.CommentArticleRepository;
+import com.example.demo.repository.EmotionArticleRepository;
+import com.example.demo.repository.EmotionCommentRepository;
 import com.example.demo.repository.FileRepository;
 import com.example.demo.repository.FriendshipRepository;
-import com.example.demo.repository.ArticleRepository;
+import com.example.demo.repository.ImageArticleRepository;
+import com.example.demo.repository.TagArticleRepository;
+import com.example.demo.repository.TagImageArticleRepository;
+import com.example.demo.repository.TextImageArticleRepository;
+import com.example.demo.repository.VideoArticleRepository;
 import com.example.demo.request.CreateArticleRequest;
 import com.example.demo.request.CustomPageRequest;
 import com.example.demo.response.AccountResponse;
+import com.example.demo.response.ArticleResponse;
 import com.example.demo.response.CheckinResponse;
 import com.example.demo.response.CommentArticleResponse;
 import com.example.demo.response.CustomPageResponse;
-import com.example.demo.response.EmotionCommentResponse;
 import com.example.demo.response.EmotionArticleResponse;
+import com.example.demo.response.EmotionCommentResponse;
 import com.example.demo.response.FileResponse;
 import com.example.demo.response.ImageArticleResponse;
-import com.example.demo.response.ArticleResponse;
 import com.example.demo.response.TagImageArticleResponse;
 import com.example.demo.response.TextImageArticleResponse;
 import com.example.demo.response.VideoArticleResponse;
@@ -69,16 +81,52 @@ public class ArticleService {
 
 	private FileRepository fileRepository;
 
+	private TagArticleRepository tagArticleRepository;
+
+	private ImageArticleRepository imageRepository;
+
+	private VideoArticleRepository videoRepository;
+
+	private TagImageArticleRepository tagImageRepository;
+
+	private ImageArticleRepository imageArticleRepository;
+
+	private TextImageArticleRepository textImageArticleRepository;
+
+	private CommentArticleRepository commentArticleRepository;
+
+	private EmotionArticleRepository emotionArticleRepository;
+
+	private EmotionCommentRepository emotionCommentRepository;
+
 	private RestTemplate restTemplate;
 
-	public ArticleService(ArticleRepository articleRepository, AccountRepository accountRepository,
-			CheckinRepository checkinRepository, FriendshipRepository friendshipRepository,
-			FileRepository fileRepository, RestTemplate restTemplate) {
+	public ArticleService(
+			ArticleRepository articleRepository,
+			AccountRepository accountRepository,
+			CheckinRepository checkinRepository,
+			FriendshipRepository friendshipRepository,
+			FileRepository fileRepository,
+			TagArticleRepository tagArticleRepository,
+			ImageArticleRepository imageArticleRepository,
+			TagImageArticleRepository tagImageRepository,
+			TextImageArticleRepository textImageArticleRepository,
+			CommentArticleRepository commentArticleRepository,
+			EmotionArticleRepository emotionArticleRepository,
+			EmotionCommentRepository emotionCommentRepository,
+			RestTemplate restTemplate) {
 		this.articleRepository = articleRepository;
 		this.accountRepository = accountRepository;
 		this.checkinRepository = checkinRepository;
 		this.friendshipRepository = friendshipRepository;
 		this.fileRepository = fileRepository;
+		this.tagArticleRepository = tagArticleRepository;
+		this.tagImageRepository = tagImageRepository;
+		this.imageArticleRepository = imageArticleRepository;
+		this.textImageArticleRepository = textImageArticleRepository;
+		this.commentArticleRepository = commentArticleRepository;
+		this.emotionArticleRepository = emotionArticleRepository;
+		this.emotionCommentRepository = emotionCommentRepository;
 		this.restTemplate = restTemplate;
 	}
 
@@ -91,21 +139,25 @@ public class ArticleService {
 		if (account.getStatus() == DeleteStatusType.INACTIVE)
 			throw new BlockException(ErrorCodeType.ERROR_ACCOUNT_BLOCKED);
 		Timestamp now = new Timestamp(System.currentTimeMillis());
-		ArticleEntity article = ArticleEntity.builder().text(request.getText()).emotionId(request.getEmotion())
-				.scope(request.getScope()).createTime(now).account(account).modTime(now).status(DeleteStatusType.ACTIVE)
+		ArticleEntity article = ArticleEntity.builder()
+				.text(request.getText())
+				.emotionId(request.getEmotion())
+				.scope(request.getScope())
+				.createTime(now)
+				.accountId(account.getAccountId())
+				.modTime(now)
+				.status(DeleteStatusType.ACTIVE)
 				.build();
 
 		if (request.getCheckin() != null) {
 			Optional<CheckinEntity> checkinOpt = checkinRepository.findById(request.getCheckin());
 			if (checkinOpt.isEmpty())
 				throw new NotFoundException(ErrorCodeType.ERROR_CHECKIN_SPECIFIC_NOT_FOUND, request.getCheckin());
-			CheckinEntity checkin = checkinOpt.get();
-
-			article.setCheckin(checkin);
+			article.setCheckinId(checkinOpt.get().getCheckinId());
 		}
+		articleRepository.save(article);
 
 		if (request.getTags() != null) {
-			article.setTags(new ArrayList<>());
 			request.getTags().forEach(item -> {
 				Optional<AccountEntity> tagAccountOpt = accountRepository.findById(item);
 				if (tagAccountOpt.isEmpty())
@@ -116,13 +168,16 @@ public class ArticleService {
 				if (friendshipOpt.isEmpty() || friendshipOpt.get().getStatus() != FriendshipStatusType.ACCEPTED)
 					throw new BadRequestException(ErrorCodeType.ERROR_ACCOUNT_SPECIFIC_NOT_FRIEND, accountId);
 
-				AccountEntity tagAccount = tagAccountOpt.get();
-				article.getTags().add(tagAccount);
+				TagArticleEntity tagArticleEntity = TagArticleEntity.builder()
+						.accountId(accountId)
+						.articleId(article.getArticleId())
+						.build();
+
+				tagArticleRepository.save(tagArticleEntity);
 			});
 		}
 
 		if (request.getVideos() != null) {
-			article.setVideoArticles(new ArrayList<>());
 			request.getVideos().forEach(item -> {
 				MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
 				body.add("file", item.getFile().getResource());
@@ -143,12 +198,16 @@ public class ArticleService {
 					FileEntity file = fileOpt.get();
 
 					Timestamp createTime = new Timestamp(item.getCreateTime());
-					VideoArticleEntity video = VideoArticleEntity.builder().text(item.getNote()).createTime(createTime)
-							.modTime(createTime).status(DeleteStatusType.ACTIVE).build();
-					video.setFile(file);
-					video.setArticle(article);
-					article.getVideoArticles().add(video);
+					VideoArticleEntity video = VideoArticleEntity.builder()
+							.text(item.getNote())
+							.createTime(createTime)
+							.modTime(createTime)
+							.status(DeleteStatusType.ACTIVE)
+							.build();
 
+					video.setFileId(file.getFileId());
+					video.setArticleId(article.getArticleId());
+					videoRepository.save(video);
 				} else {
 					throw new BadRequestException(ErrorCodeType.ERROR_CANNOT_SAVE_FILE, item.getFile().getName());
 				}
@@ -156,52 +215,27 @@ public class ArticleService {
 		}
 
 		if (request.getImages() != null) {
-			article.setImageArticles(new ArrayList<>());
 			request.getImages().forEach(item -> {
 				Timestamp createTime = new Timestamp(item.getCreateTime());
-				ImageArticleEntity image = ImageArticleEntity.builder().text(item.getNote()).createTime(createTime)
-						.modTime(createTime).status(DeleteStatusType.ACTIVE).build();
-
-				if (item.getTags() != null) {
-					image.setTagImageArticles(new ArrayList<>());
-					item.getTags().forEach(tagImageRequest -> {
-
-						Optional<AccountEntity> tagImageAccountOpt = accountRepository
-								.findById(tagImageRequest.getAccountId());
-						if (tagImageAccountOpt.isEmpty())
-							throw new NotFoundException(ErrorCodeType.ERROR_ACCOUNT_SPECIFIC_NOT_FOUND,
-									tagImageRequest.getAccountId());
-
-						Optional<FriendshipEntity> friendshipOpt = friendshipRepository
-								.customFindByReceiverIdAndSenderId(tagImageRequest.getAccountId(), accountId);
-						if (friendshipOpt.isEmpty() || friendshipOpt.get().getStatus() != FriendshipStatusType.ACCEPTED)
-							throw new BadRequestException(ErrorCodeType.ERROR_ACCOUNT_SPECIFIC_NOT_FOUND,
-									tagImageRequest.getAccountId());
-
-						TagImageArticleEntity tagImage = TagImageArticleEntity.builder().xPos(tagImageRequest.getXPos())
-								.yPos(tagImageRequest.getYPos()).imageArticle(image).build();
-
-						AccountEntity tagImageAccount = tagImageAccountOpt.get();
-
-						tagImage.setAccount(tagImageAccount);
-						account.getTagImageArticles().add(tagImage);
-
-						tagImage.setImageArticle(image);
-						image.getTagImageArticles().add(tagImage);
-					});
-				}
+				ImageArticleEntity image = ImageArticleEntity.builder()
+						.text(item.getNote())
+						.createTime(createTime)
+						.modTime(createTime)
+						.status(DeleteStatusType.ACTIVE)
+						.build();
+				imageArticleRepository.save(image);
 
 				if (item.getTexts() != null) {
-					image.setTextImageArticles(new ArrayList<>());
 					item.getTexts().forEach(textImageRequest -> {
 						TextImageArticleEntity textImage = TextImageArticleEntity.builder()
 								.text(textImageRequest.getText())
-								.xPos(textImageRequest.getXPos()).yPos(textImageRequest.getYPos())
-								.color(textImageRequest.getColor()).size(textImageRequest.getSize()).imageArticle(image)
+								.xPos(textImageRequest.getXPos())
+								.yPos(textImageRequest.getYPos())
+								.color(textImageRequest.getColor())
+								.size(textImageRequest.getSize())
+								.imageArticleId(image.getImageArticleId())
 								.build();
-
-						textImage.setImageArticle(image);
-						image.getTextImageArticles().add(textImage);
+						textImageArticleRepository.save(textImage);
 					});
 				}
 				MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
@@ -222,16 +256,42 @@ public class ArticleService {
 					if (fileOpt.isEmpty())
 						throw new NotFoundException(ErrorCodeType.ERROR_CANNOT_SAVE_FILE, item.getFile().getName());
 					FileEntity file = fileOpt.get();
-					image.setFile(file);
-					article.getImageArticles().add(image);
+					image.setFileId(file.getFileId());
+					image.setArticleId(article.getArticleId());
+					imageRepository.save(image);
 				} else {
 					throw new NotFoundException(ErrorCodeType.ERROR_CANNOT_SAVE_FILE, item.getFile().getName());
 				}
-				image.setArticle(article);
-				article.getImageArticles().add(image);
+
+				if (item.getTags() != null) {
+					item.getTags().forEach(tagImageRequest -> {
+
+						Optional<AccountEntity> tagImageAccountOpt = accountRepository
+								.findById(tagImageRequest.getAccountId());
+						if (tagImageAccountOpt.isEmpty())
+							throw new NotFoundException(ErrorCodeType.ERROR_ACCOUNT_SPECIFIC_NOT_FOUND,
+									tagImageRequest.getAccountId());
+
+						Optional<FriendshipEntity> friendshipOpt = friendshipRepository
+								.customFindByReceiverIdAndSenderId(tagImageRequest.getAccountId(), accountId);
+						if (friendshipOpt.isEmpty() || friendshipOpt.get().getStatus() != FriendshipStatusType.ACCEPTED)
+							throw new BadRequestException(ErrorCodeType.ERROR_ACCOUNT_SPECIFIC_NOT_FOUND,
+									tagImageRequest.getAccountId());
+
+						TagImageArticleEntity tagImage = TagImageArticleEntity.builder().xPos(tagImageRequest.getXPos())
+								.yPos(tagImageRequest.getYPos()).build();
+
+						AccountEntity tagImageAccount = tagImageAccountOpt.get();
+
+						tagImage.setAccountId(tagImageAccount.getAccountId());
+						tagImage.setImageArticleId(image.getImageArticleId());
+						tagImageRepository.save(tagImage);
+					});
+				}
+
 			});
 		}
-		articleRepository.save(article);
+
 		return true;
 	}
 
@@ -241,31 +301,93 @@ public class ArticleService {
 		List<ArticleEntity> articles = pageArticle.getContent();
 		List<ArticleResponse> articleResponses = new ArrayList<>();
 		articles.stream().forEach(item -> {
-			ArticleResponse articleResponse = mapToArticleResponse(item);
+			ArticleResponse articleResponse = mapArticleResponse(item);
+
+			List<ImageArticleEntity> imageEntities = imageRepository.findByArticleId(item.getArticleId());
+			List<ImageArticleResponse> imageResponses = mapImageArticle(imageEntities);
+			articleResponse.setImages(imageResponses);
+
 			articleResponses.add(articleResponse);
 		});
-		return CustomPageResponse.builder().totalItem(pageArticle.getTotalElements())
+		return CustomPageResponse.builder()
+				.totalItem(pageArticle.getTotalElements())
 				.totalPage(pageArticle.getTotalPages())
-				.data(articleResponses).build();
+				.data(articleResponses)
+				.build();
 	}
 
-	public ArticleResponse mapToArticleResponse(ArticleEntity article) {
+	public List<ImageArticleResponse> mapImageArticle(List<ImageArticleEntity> entities) {
+		if (!ListUtils.isEmpty(entities)) {
+			List<ImageArticleResponse> imageResponses = new ArrayList<>();
+			entities.forEach(imageItem -> {
+				ImageArticleResponse imageResponse = new ImageArticleResponse();
+				BeanUtils.copyProperties(imageItem, imageResponse);
+
+				Optional<FileEntity> fileOpt = fileRepository.findById(imageItem.getFileId());
+				if (fileOpt.isPresent()) {
+					imageResponse.setFileUrl(fileOpt.get().getName());
+				}
+
+				List<TagImageArticleEntity> tags = tagImageRepository
+						.findAllByImageArticleId(imageItem.getImageArticleId());
+				if (!ListUtils.isEmpty(tags)) {
+					List<TagImageArticleResponse> tagImageArticleResponses = new ArrayList<>();
+					tags.forEach(item -> {
+						TagImageArticleResponse tagImageArticleResponse = new TagImageArticleResponse();
+						BeanUtils.copyProperties(item, tagImageArticleResponse);
+
+						AccountResponse tagImageArticleAccountResponse = new AccountResponse();
+						Optional<AccountEntity> tagImageArticleAccountOpt = accountRepository
+								.findById(item.getAccountId());
+						if (tagImageArticleAccountOpt.isPresent()) {
+							BeanUtils.copyProperties(tagImageArticleAccountOpt.get(), tagImageArticleAccountResponse);
+							tagImageArticleResponse.setAccount(tagImageArticleAccountResponse);
+							tagImageArticleResponses.add(tagImageArticleResponse);
+						}
+					});
+					imageResponse.setTagImageArticles(tagImageArticleResponses);
+				}
+
+				List<TextImageArticleEntity> texts = textImageArticleRepository
+						.findAllByImageArticleId(imageItem.getImageArticleId());
+				if (!ListUtils.isEmpty(texts)) {
+					List<TextImageArticleResponse> textImageArticleResponses = new ArrayList<>();
+					texts.forEach(item -> {
+						TextImageArticleResponse textImageArticleResponse = new TextImageArticleResponse();
+						BeanUtils.copyProperties(item, textImageArticleResponse);
+						textImageArticleResponses.add(textImageArticleResponse);
+					});
+					imageResponse.setTextImageArticles(textImageArticleResponses);
+				}
+
+				imageResponses.add(imageResponse);
+			});
+			return imageResponses;
+		}
+		return Collections.emptyList();
+	}
+
+	public ArticleResponse mapArticleResponse(ArticleEntity article) {
 		ArticleResponse articleResponse = new ArticleResponse();
 		BeanUtils.copyProperties(article, articleResponse);
 
+		Optional<AccountEntity> account = accountRepository.findById(article.getAccountId());
 		AccountResponse articleOwnerResponse = new AccountResponse();
-		BeanUtils.copyProperties(article.getAccount(), articleOwnerResponse);
+		BeanUtils.copyProperties(account.get(), articleOwnerResponse);
 		articleResponse.setAccount(articleOwnerResponse);
 
-		if (article.getCheckin() != null) {
+		if (article.getCheckinId() != null) {
+			Optional<CheckinEntity> checkin = checkinRepository.findById(article.getCheckinId());
 			CheckinResponse checkinResponse = new CheckinResponse();
-			BeanUtils.copyProperties(article.getCheckin(), checkinResponse);
+			BeanUtils.copyProperties(checkin.get(), checkinResponse);
 			articleResponse.setCheckin(checkinResponse);
 		}
 
-		if (!ListUtils.isEmpty(article.getTags())) {
+		List<TagArticleEntity> tags = tagArticleRepository.findAllByArticleId(article.getArticleId());
+
+		if (!ListUtils.isEmpty(tags)) {
 			List<AccountResponse> tagAccountResponses = new ArrayList<>();
-			article.getTags().forEach(item -> {
+			tags.forEach(item -> {
 				AccountResponse tagAccountResponse = new AccountResponse();
 				BeanUtils.copyProperties(item, tagAccountResponse);
 				tagAccountResponses.add(tagAccountResponse);
@@ -273,72 +395,41 @@ public class ArticleService {
 			articleResponse.setTags(tagAccountResponses);
 		}
 
-		if (!ListUtils.isEmpty(article.getVideoArticles())) {
+		List<VideoArticleEntity> videos = videoRepository.findAllByArticleId(article.getArticleId());
+		if (!ListUtils.isEmpty(videos)) {
 			List<VideoArticleResponse> videoArticleResponses = new ArrayList<>();
-			article.getVideoArticles().forEach(item -> {
+			videos.forEach(item -> {
 				VideoArticleResponse videoArticleResponse = new VideoArticleResponse();
 				BeanUtils.copyProperties(item, videoArticleResponse);
 
-				videoArticleResponse.setFileUrl(item.getFile().getName());
+				Optional<FileEntity> fileOpt = fileRepository.findById(item.getFileId());
+				if (fileOpt.isPresent()) {
+					videoArticleResponse.setFileUrl(fileOpt.get().getName());
+				}
 
 				videoArticleResponses.add(videoArticleResponse);
 			});
 			articleResponse.setVideos(videoArticleResponses);
 		}
 
-		if (!ListUtils.isEmpty(article.getImageArticles())) {
-			List<ImageArticleResponse> imageArticleResponses = new ArrayList<>();
-			article.getImageArticles().forEach(imageArticleItem -> {
-				ImageArticleResponse imageArticleResponse = new ImageArticleResponse();
-				BeanUtils.copyProperties(imageArticleItem, imageArticleResponse);
-
-				imageArticleResponse.setFileUrl(imageArticleItem.getFile().getName());
-
-				if (!ListUtils.isEmpty(imageArticleItem.getTagImageArticles())) {
-					List<TagImageArticleResponse> tagImageArticleResponses = new ArrayList<>();
-					imageArticleItem.getTagImageArticles().forEach(item -> {
-						TagImageArticleResponse tagImageArticleResponse = new TagImageArticleResponse();
-						BeanUtils.copyProperties(item, tagImageArticleResponse);
-
-						AccountResponse tagImageArticleAccountResponse = new AccountResponse();
-						BeanUtils.copyProperties(item.getAccount(), tagImageArticleAccountResponse);
-						tagImageArticleResponse.setAccount(tagImageArticleAccountResponse);
-
-						tagImageArticleResponses.add(tagImageArticleResponse);
-					});
-					imageArticleResponse.setTagImageArticles(tagImageArticleResponses);
-				}
-
-				if (!ListUtils.isEmpty(imageArticleItem.getTextImageArticles())) {
-					List<TextImageArticleResponse> textImageArticleResponses = new ArrayList<>();
-					imageArticleItem.getTextImageArticles().forEach(item -> {
-						TextImageArticleResponse textImageArticleResponse = new TextImageArticleResponse();
-						BeanUtils.copyProperties(item, textImageArticleResponse);
-						textImageArticleResponses.add(textImageArticleResponse);
-					});
-					imageArticleResponse.setTextImageArticles(textImageArticleResponses);
-				}
-
-				imageArticleResponses.add(imageArticleResponse);
-			});
-			articleResponse.setImages(imageArticleResponses);
-		}
-
-		if (!ListUtils.isEmpty(article.getEmotions())) {
-			List<EmotionArticleResponse> responses = article.getEmotions().stream().map(item -> {
+		List<EmotionArticleEntity> emotions = emotionArticleRepository.findAllByArticleId(article.getArticleId());
+		if (!ListUtils.isEmpty(emotions)) {
+			List<EmotionArticleResponse> responses = emotions.stream().map(item -> {
 				EmotionArticleResponse emotionArticleResponse = new EmotionArticleResponse();
 				BeanUtils.copyProperties(item, emotionArticleResponse);
 
 				AccountResponse accountResponse = new AccountResponse();
-				BeanUtils.copyProperties(item.getAccount(), accountResponse);
+				Optional<AccountEntity> accountOpt = accountRepository.findById(item.getAccountId());
+				BeanUtils.copyProperties(accountOpt.get(), accountResponse);
 				emotionArticleResponse.setAccount(accountResponse);
 				return emotionArticleResponse;
 			}).toList();
 			articleResponse.setEmotions(responses);
 		}
 
-		if (!ListUtils.isEmpty(article.getComments())) {
-			List<CommentArticleResponse> responses = article.getComments().stream().map(this::mapCommentEntityToDTO)
+		List<CommentArticleEntity> comments = commentArticleRepository.findAllByArticleId(article.getArticleId());
+		if (!ListUtils.isEmpty(comments)) {
+			List<CommentArticleResponse> responses = comments.stream().map(this::mapCommentEntityToDTO)
 					.toList();
 			articleResponse.setComments(responses);
 		}
@@ -351,19 +442,24 @@ public class ArticleService {
 		BeanUtils.copyProperties(entity, response);
 
 		AccountResponse accountResponse = new AccountResponse();
-		AccountEntity account = entity.getAccount();
-		BeanUtils.copyProperties(account, accountResponse);
+		Integer accountId = entity.getAccountId();
+
+		Optional<AccountEntity> accountOpt = accountRepository.findById(accountId);
+		BeanUtils.copyProperties(accountOpt.get(), accountResponse);
 		response.setAccount(accountResponse);
 
-		if (entity.getParent() != null) {
-			response.setParentId(entity.getParent().getCommentId());
+		if (entity.getParentId() != null) {
+			response.setParentId(entity.getParentId());
 		}
 
-		if (entity.getFile() != null) {
-			FileEntity fileEntity = entity.getFile();
-			FileResponse fileResponse = new FileResponse();
-			BeanUtils.copyProperties(fileEntity, fileResponse);
-			response.setFile(fileResponse);
+		if (entity.getFileId() != null) {
+			Integer fileId = entity.getFileId();
+			Optional<FileEntity> fileOpt = fileRepository.findById(fileId);
+			if (fileOpt.isPresent()) {
+				FileResponse fileResponse = new FileResponse();
+				BeanUtils.copyProperties(fileOpt.get(), fileResponse);
+				response.setFile(fileResponse);
+			}
 		}
 
 		if (entity.getMentionedAccounts() != null && entity.getMentionedAccounts().length() > 0) {
@@ -385,12 +481,14 @@ public class ArticleService {
 			response.setMentions(accountResponses);
 		}
 
-		if (entity.getEmotions() != null) {
-			List<EmotionCommentResponse> emotionCommentResponses = entity.getEmotions().stream().map(item -> {
+		List<EmotionCommentEntity> emotions = emotionCommentRepository.findAllByCommentId(entity.getCommentId());
+		if (emotions != null) {
+			List<EmotionCommentResponse> emotionCommentResponses = emotions.stream().map(item -> {
 				EmotionCommentResponse emotionCommentResponse = new EmotionCommentResponse();
 				BeanUtils.copyProperties(item, emotionCommentResponse);
 
-				AccountEntity accountEmotion = item.getAccount();
+				Optional<AccountEntity> accountEmotionOpt = accountRepository.findById(item.getAccountId());
+				AccountEntity accountEmotion = accountEmotionOpt.get();
 				AccountResponse accountEmotionResponse = new AccountResponse();
 				BeanUtils.copyProperties(accountEmotion, accountEmotionResponse);
 				emotionCommentResponse.setAccount(accountResponse);

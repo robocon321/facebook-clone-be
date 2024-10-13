@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 import com.example.demo.entity.AccountEntity;
 import com.example.demo.exception.BlockException;
 import com.example.demo.exception.NotFoundException;
-import com.example.demo.provider.JwtProvider;
 import com.example.demo.repository.AccountRepository;
 import com.example.demo.response.ProfileResponse;
 import com.example.demo.type.DeleteStatusType;
@@ -16,17 +15,14 @@ import com.example.demo.type.ErrorCodeType;
 
 @Service
 public class ProfileService {
-	private JwtProvider jwtProvider;
-
 	private AccountRepository accountRepository;
 
-	public ProfileService(JwtProvider jwtProvider, AccountRepository accountRepository) {
-		this.jwtProvider = jwtProvider;
+	public ProfileService(AccountRepository accountRepository) {
 		this.accountRepository = accountRepository;
 	}
 
-	public ProfileResponse getProfileInfoByAccount(Integer profileId, String token) {
-		Integer id = jwtProvider.getAccountIdFromJWT(token);
+	public ProfileResponse getProfileInfoByAccount(Integer profileId, String headerUserId) {
+		Integer id = Integer.parseInt(headerUserId);
 		Optional<AccountEntity> accountOpt = accountRepository.findById(id);
 		if (accountOpt.isEmpty())
 			throw new NotFoundException(ErrorCodeType.ERROR_ACCOUNT_NOT_FOUND);

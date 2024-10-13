@@ -5,8 +5,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -30,11 +28,9 @@ public class TagImageArticleEntity {
 	@Column(nullable = false)
 	private Double yPos;
 
-	@ManyToOne
-	@JoinColumn(nullable = false, name = "account_id")
-	private AccountEntity account;
+	@Column(nullable = false)
+	private Integer accountId;
 
-	@ManyToOne
-	@JoinColumn(nullable = false, name = "image_article_id")
-	private ImageArticleEntity imageArticle;
+	@Column(nullable = false, name = "image_article_id")
+	private Integer imageArticleId;
 }

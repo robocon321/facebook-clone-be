@@ -9,5 +9,5 @@ import com.example.demo.entity.CommentArticleEntity;
 
 @Repository
 public interface CommentArticleRepository extends JpaRepository<CommentArticleEntity, Integer> {
-	List<CommentArticleEntity> findByArticleArticleId(Integer articleId);
+	List<CommentArticleEntity> findAllByArticleId(Integer articleId);
 }

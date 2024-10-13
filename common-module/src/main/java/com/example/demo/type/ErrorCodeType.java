@@ -2,6 +2,7 @@ package com.example.demo.type;
 
 public enum ErrorCodeType {
     ERROR_ACCOUNT_NOT_FOUND("Your account does not exists"),
+    ERROR_ACCOUNT_FOUND("Your account has already existed"),
     ERROR_ACCOUNT_SPECIFIC_NOT_FOUND("Account {0} does not exists"),
     ERROR_ACCOUNT_BLOCKED("Your account is blocked"),
     ERROR_ACCOUNT_SPECIFIC_BLOCKED("Account {0} is blocked"),
@@ -15,7 +16,7 @@ public enum ErrorCodeType {
     ERROR_ACCOUNT_ACCEPT_FRIENDSHIP("Your account has accept request friendship before"),
     ERROR_FILE_NOT_FOUND("File not found"),
     ERROR_FILE_INVALID("File is invalid"),
-    ERROR_REQUIRE_LOG("Please login"),
+    ERROR_REQUIRE_LOGIN("Please login"),
     ERROR_CHECKIN_SPECIFIC_NOT_FOUND("Checkin {0} is not found"),
     ERROR_TAG_SPECIFIC_NOT_FOUND("Tag {0} not found"),
     ERROR_ACCOUNT_SPECIFIC_NOT_FRIEND("AccountID: {0} is not your friend"),

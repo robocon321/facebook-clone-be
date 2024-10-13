@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -8,9 +9,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ServerWebExchange;
 
 import com.example.demo.config.CustomUserDetails;
 import com.example.demo.dto.request.CreateAccountRequest;
@@ -18,8 +20,8 @@ import com.example.demo.dto.request.LoginRequest;
 import com.example.demo.dto.response.CreateAccountResponse;
 import com.example.demo.exception.AuthorizeException;
 import com.example.demo.exception.BlockException;
-import com.example.demo.exception.ResourceCreationException;
 import com.example.demo.service.AuthService;
+import com.example.demo.utils.Const;
 
 import jakarta.validation.Valid;
 import jakarta.ws.rs.BadRequestException;
@@ -42,7 +44,7 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (RuntimeException e) {
             e.printStackTrace();
-            throw new ResourceCreationException("Duplication account email or phone");
+            throw e;
         }
     }
 
@@ -63,14 +65,17 @@ public class AuthController {
         }
     }
 
-    @GetMapping("/validate")
-    public String validateToken(@RequestParam("token") String token) {
-        service.validateToken(token);
-        return "Token is valid";
+    @PostMapping("/user-id")
+    public Integer getUserIdFromToken(@RequestBody String jwt) {
+        if (jwt != null) {
+            return service.getUserIdFromJWT(jwt);
+        } else {
+            return null;
+        }
     }
 
     @GetMapping
-    public String welcome() {
-        return "Hello world";
+    public String welcome(@RequestHeader(name = Const.X_USER_ID_HEADER) String userId) {
+        return "Hello world. Welcome userID: " + userId;
     }
 }

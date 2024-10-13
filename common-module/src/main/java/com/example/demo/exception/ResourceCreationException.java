@@ -1,8 +1,9 @@
 package com.example.demo.exception;
 
-public class ResourceCreationException extends RuntimeException {
+import com.example.demo.type.ErrorCodeType;
 
-	public ResourceCreationException(String message) {
-		super(message);
+public class ResourceCreationException extends RuntimeException {
+	public ResourceCreationException(ErrorCodeType code) {
+		super(code.getMessage());
 	}
 }

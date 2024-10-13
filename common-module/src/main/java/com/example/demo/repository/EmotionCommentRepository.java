@@ -12,10 +12,10 @@ import jakarta.transaction.Transactional;
 
 @Repository
 public interface EmotionCommentRepository extends JpaRepository<EmotionCommentEntity, Integer> {
-	List<EmotionCommentEntity> findByCommentCommentId(Integer commentId);
+	List<EmotionCommentEntity> findAllByCommentId(Integer commentId);
 
-	Optional<EmotionCommentEntity> findByAccountAccountIdAndCommentCommentId(Integer accountId, Integer commentId);
+	Optional<EmotionCommentEntity> findByAccountIdAndCommentId(Integer accountId, Integer commentId);
 
 	@Transactional
-	void deleteAllByAccountAccountIdAndCommentCommentId(Integer accountId, Integer commentId);
+	void deleteAllByAccountIdAndCommentId(Integer accountId, Integer commentId);
 }

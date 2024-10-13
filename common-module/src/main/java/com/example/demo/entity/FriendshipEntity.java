@@ -9,8 +9,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PostLoad;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
@@ -32,13 +30,11 @@ public class FriendshipEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer friendshipId;
 
-	@ManyToOne
-	@JoinColumn(name = "sender_id", nullable = false)
-	private AccountEntity sender;
+	@Column(name = "sender_id", nullable = false)
+	private Integer senderId;
 
-	@ManyToOne
-	@JoinColumn(name = "receiver_id", nullable = false)
-	private AccountEntity receiver;
+	@Column(name = "receiver_id", nullable = false)
+	private Integer receiverId;
 
 	@Transient
 	private FriendshipStatusType status;

@@ -24,15 +24,13 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.socket.messaging.AbstractSubProtocolEvent;
 
-import com.example.demo.provider.JwtProvider;
 import com.example.demo.request.CommentArticleRequest;
 import com.example.demo.response.CommentArticleResponse;
 import com.example.demo.service.CommentArticleService;
+import com.example.demo.utils.Const;
 
 @Controller
 public class CommentArticleController {
-	private JwtProvider jwtProvider;
-
 	private final HashMap<Integer, Map<String, Integer>> userCommentArticleSessions;
 
 	private Set<Integer> setFocus;
@@ -41,9 +39,8 @@ public class CommentArticleController {
 
 	private CommentArticleService commentArticleService;
 
-	public CommentArticleController(JwtProvider jwtProvider, SimpMessagingTemplate simpMessagingTemplate,
+	public CommentArticleController(SimpMessagingTemplate simpMessagingTemplate,
 			CommentArticleService commentArticleService) {
-		this.jwtProvider = jwtProvider;
 		this.simpMessagingTemplate = simpMessagingTemplate;
 		this.commentArticleService = commentArticleService;
 		userCommentArticleSessions = new HashMap<>();
@@ -58,11 +55,10 @@ public class CommentArticleController {
 
 	@PostMapping("/comment-article/create")
 	public void createComment(@ModelAttribute CommentArticleRequest request, @RequestHeader HttpHeaders headers) {
-		String authorizationHeader = headers.getFirst("Authorization");
-		if (authorizationHeader != null) {
-			String token = authorizationHeader.substring(7);
-			Integer accountId = jwtProvider.getAccountIdFromJWT(token);
-			commentArticleService.createComment(request, accountId);
+		String headerUserId = headers.getFirst(Const.X_USER_ID_HEADER);
+		if (headerUserId != null) {
+			Integer userId = Integer.parseInt(headerUserId);
+			commentArticleService.createComment(request, userId);
 			List<CommentArticleResponse> commentArticleResponses = commentArticleService
 					.getAllCommentByArticle(request.getArticleId());
 			simpMessagingTemplate.convertAndSend("/comment-topic/article/create/" + request.getArticleId(),
@@ -119,10 +115,10 @@ public class CommentArticleController {
 		String destination = headerAccessor.getDestination();
 		if (destination != null && destination.startsWith("/user/comment-topic/article/check-focus")) {
 			String senderSession = headerAccessor.getSessionId();
-			List<String> tokens = headerAccessor.getNativeHeader("token");
-			if (tokens != null) {
-				String token = tokens.get(0);
-				Integer senderId = jwtProvider.getAccountIdFromJWT(token);
+			List<String> headerUserIds = headerAccessor.getNativeHeader(Const.X_USER_ID_HEADER);
+			if (headerUserIds != null) {
+				String headerUserId = headerUserIds.get(0);
+				Integer senderId = Integer.parseInt(headerUserId);
 
 				String[] destinationSplit = destination.split("/");
 				Integer articleId = Integer.parseInt(destinationSplit[destinationSplit.length - 1]);

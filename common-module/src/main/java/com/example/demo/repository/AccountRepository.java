@@ -84,4 +84,6 @@ public interface AccountRepository extends JpaRepository<AccountEntity, Integer>
 			+ ")", nativeQuery = true)
 	List<AccountEntity> findManualFriends(@Param("current_id") Integer currentId, @Param("search_id") Integer searchId);
 
+	boolean existsByEmailOrPhone(String email, String phone);
+
 }
