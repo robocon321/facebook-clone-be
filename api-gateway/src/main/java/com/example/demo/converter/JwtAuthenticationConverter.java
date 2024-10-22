@@ -4,6 +4,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.server.authentication.ServerAuthenticationConverter;
+import org.springframework.security.web.server.context.SecurityContextServerWebExchange;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ServerWebExchange;
@@ -29,6 +30,9 @@ public class JwtAuthenticationConverter implements ServerAuthenticationConverter
 
 	@Override
 	public Mono<Authentication> convert(ServerWebExchange exchange) {
+		if (exchange instanceof SecurityContextServerWebExchange) {
+			return Mono.empty();
+		}
 		return Mono.just(exchange)
 				.flatMap(exch -> {
 					if (exch.getRequest().getHeaders().containsKey("Authorization")) {

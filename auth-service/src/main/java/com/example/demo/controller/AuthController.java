@@ -73,7 +73,7 @@ public class AuthController {
     }
 
     @GetMapping
-    public String welcome(@RequestHeader(name = Const.X_USER_ID_HEADER) String userId) {
-        return "Hello world. Welcome userID: " + userId;
+    public String welcome() {
+        return "Welcome to auth-service";
     }
 }

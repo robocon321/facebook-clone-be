@@ -20,7 +20,6 @@ import com.example.demo.type.ActionHistoryStatusType;
 import com.example.demo.utils.Const;
 
 import jakarta.validation.Valid;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/api/v1/account")

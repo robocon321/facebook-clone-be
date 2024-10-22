@@ -5,10 +5,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("hello")
 public class HelloController {
 	@GetMapping
 	public String hi() {
-		return "Hello world";
+		return "Welcome to api-gateway";
 	}
 }
