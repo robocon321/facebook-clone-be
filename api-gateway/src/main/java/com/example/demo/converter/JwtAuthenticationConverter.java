@@ -11,6 +11,7 @@ import org.springframework.web.server.ServerWebExchange;
 
 import com.example.demo.config.CustomUserDetailService;
 import com.example.demo.utils.Const;
+import com.example.demo.utils.ServerHttpRequestDecoratorUtils;
 
 import reactor.core.publisher.Mono;
 
@@ -46,7 +47,9 @@ public class JwtAuthenticationConverter implements ServerAuthenticationConverter
 									.bodyToMono(Integer.class)
 									.flatMap(userId -> {
 										if (userId == null) {
-											exch.getRequest().getHeaders().remove(Const.X_USER_ID_HEADER);
+											ServerHttpRequestDecoratorUtils.removeHeaderItem(
+													exch,
+													Const.X_USER_ID_HEADER);
 											return Mono.empty();
 										}
 										UserDetails userDetails = customUserDetailService
@@ -56,7 +59,9 @@ public class JwtAuthenticationConverter implements ServerAuthenticationConverter
 												userDetails.getAuthorities()));
 									})
 									.onErrorResume(ex -> {
-										exch.getRequest().getHeaders().remove(Const.X_USER_ID_HEADER);
+										ServerHttpRequestDecoratorUtils.removeHeaderItem(
+												exch,
+												Const.X_USER_ID_HEADER);
 										return Mono.empty();
 									});
 						}
