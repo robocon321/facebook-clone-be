@@ -6399,3 +6399,20 @@ insert into friendship (request_time, status, receiver_id, sender_id)
 values ('2021-12-11', 'B', 81, 41);
 insert into friendship (request_time, status, receiver_id, sender_id)
 values ('2022-04-09', 'C', 62, 76);
+
+UPDATE account
+SET 
+    cover_photo_url = CONCAT(
+        'https://random.imagecdn.app/', 
+        FLOOR(1920 + RAND() * (2000 - 1920)), 
+        '/', 
+        FLOOR(1000 + RAND() * (1100 - 1000))
+    ),
+    profile_picture_url = CONCAT(
+        'https://random.imagecdn.app/', 
+        FLOOR(500 + RAND() * (1000 - 500)),
+        '/', 
+        FLOOR(500 + RAND() * (1000 - 500))
+    )
+WHERE
+    (profile_picture_url IS NULL OR cover_photo_url IS NULL);
