@@ -33,6 +33,8 @@ public class LoggingAspect {
             Object result = joinPoint.proceed();
             return result;
         } catch (Throwable ex) {
+            log.error("Exception occurred: Type={}, Detail={}",
+                    ex.getClass().getName(), ex.getMessage(), ex);
             throw ex;
         } finally {
             long end = System.currentTimeMillis();

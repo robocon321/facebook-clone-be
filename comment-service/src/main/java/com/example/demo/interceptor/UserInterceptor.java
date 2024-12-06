@@ -1,4 +1,4 @@
-package com.example.demo.config;
+package com.example.demo.interceptor;
 
 import org.springframework.lang.NonNull;
 import org.springframework.messaging.Message;
@@ -8,6 +8,8 @@ import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.stereotype.Component;
+
+import com.example.demo.config.UserPrinciple;
 
 @Component
 public class UserInterceptor implements ChannelInterceptor {

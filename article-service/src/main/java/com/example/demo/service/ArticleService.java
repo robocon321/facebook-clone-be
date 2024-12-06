@@ -83,8 +83,6 @@ public class ArticleService {
 
 	private TagArticleRepository tagArticleRepository;
 
-	private ImageArticleRepository imageRepository;
-
 	private VideoArticleRepository videoRepository;
 
 	private TagImageArticleRepository tagImageRepository;
@@ -114,6 +112,7 @@ public class ArticleService {
 			CommentArticleRepository commentArticleRepository,
 			EmotionArticleRepository emotionArticleRepository,
 			EmotionCommentRepository emotionCommentRepository,
+			VideoArticleRepository videoArticleRepository,
 			RestTemplate restTemplate) {
 		this.articleRepository = articleRepository;
 		this.accountRepository = accountRepository;
@@ -127,6 +126,7 @@ public class ArticleService {
 		this.commentArticleRepository = commentArticleRepository;
 		this.emotionArticleRepository = emotionArticleRepository;
 		this.emotionCommentRepository = emotionCommentRepository;
+		this.videoRepository = videoArticleRepository;
 		this.restTemplate = restTemplate;
 	}
 
@@ -258,7 +258,7 @@ public class ArticleService {
 					FileEntity file = fileOpt.get();
 					image.setFileId(file.getFileId());
 					image.setArticleId(article.getArticleId());
-					imageRepository.save(image);
+					imageArticleRepository.save(image);
 				} else {
 					throw new NotFoundException(ErrorCodeType.ERROR_CANNOT_SAVE_FILE, item.getFile().getName());
 				}
@@ -303,7 +303,7 @@ public class ArticleService {
 		articles.stream().forEach(item -> {
 			ArticleResponse articleResponse = mapArticleResponse(item);
 
-			List<ImageArticleEntity> imageEntities = imageRepository.findByArticleId(item.getArticleId());
+			List<ImageArticleEntity> imageEntities = imageArticleRepository.findByArticleId(item.getArticleId());
 			List<ImageArticleResponse> imageResponses = mapImageArticle(imageEntities);
 			articleResponse.setImages(imageResponses);
 

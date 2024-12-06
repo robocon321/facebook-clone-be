@@ -8,13 +8,18 @@ import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBr
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
+import com.example.demo.interpretor.AuthHandshakeInterceptor;
+import com.example.demo.interpretor.UserInterceptor;
+
 @Configuration
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
-    private UserInterceptor userInterceptor;
+    private final UserInterceptor userInterceptor;
+    private final AuthHandshakeInterceptor authHandshakeInterceptor;
 
-    public WebSocketConfig(UserInterceptor userInterceptor) {
+    public WebSocketConfig(UserInterceptor userInterceptor, AuthHandshakeInterceptor authHandshakeInterceptor) {
         this.userInterceptor = userInterceptor;
+        this.authHandshakeInterceptor = authHandshakeInterceptor;
     }
 
     @Override
@@ -26,8 +31,15 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(@NonNull StompEndpointRegistry registry) {
-        registry.addEndpoint("/article").setAllowedOrigins("http://localhost:3000");
-        registry.addEndpoint("/article").setAllowedOrigins("http://localhost:3000").withSockJS();
+        registry
+                .addEndpoint("/ws/article")
+                .addInterceptors(authHandshakeInterceptor)
+                .setAllowedOrigins("http://localhost:3000");
+        registry
+                .addEndpoint("/ws/article")
+                .addInterceptors(authHandshakeInterceptor)
+                .setAllowedOrigins("http://localhost:3000")
+                .withSockJS();
     }
 
     @Override

@@ -1,48 +1,54 @@
 package com.example.demo.controller;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.springframework.context.event.EventListener;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.socket.messaging.AbstractSubProtocolEvent;
 
+import com.example.demo.config.UserSessionManager;
+import com.example.demo.config.WebSocketEventDispatcher;
+import com.example.demo.config.WebSocketSubscriber;
 import com.example.demo.request.EmotionCommentRequest;
 import com.example.demo.response.EmotionCommentResponse;
 import com.example.demo.service.EmotionCommentService;
 import com.example.demo.type.EmotionType;
-import com.example.demo.utils.Const;
 
 @Controller
-public class EmotionCommentController {
-	private final ConcurrentHashMap<Integer, Map<String, Integer>> userSessions;
+public class EmotionCommentController implements WebSocketSubscriber {
+	private final ConcurrentHashMap<Integer, List<String>> userSessions;
 
 	private EmotionCommentService emotionCommentService;
 
 	private SimpMessagingTemplate simpMessagingTemplate;
 
-	public EmotionCommentController(EmotionCommentService emotionCommentService,
-			SimpMessagingTemplate simpMessagingTemplate) {
+	private UserSessionManager userSessionManager;
+
+	public EmotionCommentController(
+			EmotionCommentService emotionCommentService,
+			SimpMessagingTemplate simpMessagingTemplate,
+			UserSessionManager userSessionManager,
+			WebSocketEventDispatcher dispatcher) {
 		this.emotionCommentService = emotionCommentService;
 		this.simpMessagingTemplate = simpMessagingTemplate;
+		this.userSessionManager = userSessionManager;
 		userSessions = new ConcurrentHashMap<>();
+		dispatcher.add(this);
 	}
 
-	@MessageMapping("/emotion-comment/create/{articleId}")
+	@MessageMapping("/emotion/create/{articleId}")
 	public void createEmotionComment(@Payload EmotionCommentRequest request, @DestinationVariable Integer articleId,
 			SimpMessageHeaderAccessor headerAccessor) {
 		EmotionType emotionType = EmotionType.valueOf(request.getType());
-		Integer accountId = userSessions.get(articleId).get(headerAccessor.getSessionId());
+		Integer accountId = userSessionManager.getUserId(headerAccessor.getSessionId());
 		emotionCommentService.saveEmotionComment(emotionType, accountId, request.getCommentId());
-
 		List<EmotionCommentResponse> emotions = emotionCommentService.getListEmotionByCommentId(request.getCommentId());
 		Map<String, Object> response = new HashMap<>();
 		response.put("commentId", request.getCommentId());
@@ -51,11 +57,11 @@ public class EmotionCommentController {
 		this.simpMessagingTemplate.convertAndSend("/comment-topic/emotion/" + articleId, response);
 	}
 
-	@MessageMapping("/emotion-comment/delete/{articleId}")
+	@MessageMapping("/emotion/delete/{articleId}")
 	public void deleteEmotionComment(@Payload String commentIdStr, @DestinationVariable Integer articleId,
 			SimpMessageHeaderAccessor headerAccessor) {
 		Integer commentId = Integer.parseInt(commentIdStr);
-		Integer accountId = userSessions.get(articleId).get(headerAccessor.getSessionId());
+		Integer accountId = userSessionManager.getUserId(headerAccessor.getSessionId());
 		emotionCommentService.deleteEmotion(accountId, commentId);
 		List<EmotionCommentResponse> emotions = emotionCommentService.getListEmotionByCommentId(commentId);
 		Map<String, Object> response = new HashMap<>();
@@ -64,47 +70,35 @@ public class EmotionCommentController {
 		this.simpMessagingTemplate.convertAndSend("/comment-topic/emotion/" + articleId, response);
 	}
 
-	@EventListener
-	public void handleWebSocketUnSubcribe(AbstractSubProtocolEvent event) {
-		StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
+	@Override
+	public String getDestination() {
+		return "/comment-topic/emotion/";
+	}
 
-		List<String> destinations = headerAccessor.getNativeHeader("destination");
-		if (destinations != null) {
-			String destination = destinations.get(0);
-			if (destination.startsWith("/comment-topic/emotion/")) {
-				String[] destinationSplit = destination.split("/");
-				Integer articleId = Integer.parseInt(destinationSplit[destinationSplit.length - 1]);
-
-				String senderSession = headerAccessor.getSessionId();
-				userSessions.get(articleId).remove(senderSession);
-
-				if (userSessions.get(articleId).size() == 0)
-					userSessions.remove(articleId);
-			}
+	@Override
+	public void handleWebSocketSubcribe(String[] suffix, String sessionId) {
+		if (suffix == null || suffix.length == 0 || sessionId == null)
+			return;
+		Integer articleId = Integer.parseInt(suffix[suffix.length - 1]);
+		if (!userSessions.contains(articleId)) {
+			userSessions.put(articleId, new ArrayList<>());
+		}
+		if (userSessionManager.hasSession(sessionId)) {
+			userSessions.get(articleId).add(sessionId);
 		}
 	}
 
-	@EventListener
-	public void handleWebSocketSubcribe(AbstractSubProtocolEvent event) {
-		StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
+	@Override
+	public void handleWebSocketUnSubcribe(String[] suffix, String sessionId) {
+		if (suffix == null || suffix.length == 0 || sessionId == null)
+			return;
+		Integer articleId = Integer.parseInt(suffix[suffix.length - 1]);
 
-		String destination = headerAccessor.getDestination();
-		if (destination != null && destination.startsWith("/comment-topic/emotion/")) {
-			String senderSession = headerAccessor.getSessionId();
-			List<String> headerUserIds = headerAccessor.getNativeHeader(Const.X_USER_ID_HEADER);
-			if (headerUserIds != null) {
-				String headerUserId = headerUserIds.get(0);
-				Integer senderId = Integer.parseInt(headerUserId);
+		userSessions.get(articleId).remove(sessionId);
 
-				String[] destinationSplit = destination.split("/");
-				Integer articleId = Integer.parseInt(destinationSplit[destinationSplit.length - 1]);
+		if (userSessions.get(articleId).size() == 0)
+			userSessions.remove(articleId);
 
-				if (!userSessions.containsKey(articleId)) {
-					userSessions.put(articleId, new HashMap<>());
-				}
-				userSessions.get(articleId).put(senderSession, senderId);
-			}
-		}
 	}
 
 }

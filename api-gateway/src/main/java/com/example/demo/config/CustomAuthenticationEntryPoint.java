@@ -16,6 +16,6 @@ public class CustomAuthenticationEntryPoint implements ServerAuthenticationEntry
         exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
         return exchange.getResponse()
                 .writeWith(Mono.just(exchange.getResponse()
-                        .bufferFactory().wrap("Error: Authentication is required.".getBytes())));
+                        .bufferFactory().wrap("Error: Authentication is invalid.".getBytes())));
     }
 }
